@@ -1,0 +1,70 @@
+using UnityEngine;
+
+public class FlightController : MonoBehaviour
+{
+    public float moveSpeed = 10f;
+    public float verticalSpeed = 5f;
+    public float mouseSensitivity = 2f;
+    public float doubleJumpThreshold = 0.3f;
+
+    private bool isFlying = false;
+    private int jumpCount = 0;
+    private float lastJumpTime = -1f;
+    private CharacterController controller;
+    private Transform cam;
+
+    void Start()
+    {
+        controller = GetComponent<CharacterController>();
+        cam = Camera.main.transform;
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    void Update()
+    {
+        HandleMouseLook();
+        HandleDoubleJumpToggle();
+        HandleMovement();
+    }
+
+    void HandleMouseLook()
+    {
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        transform.Rotate(Vector3.up * mouseX);
+    }
+
+    void HandleDoubleJumpToggle()
+    {
+        if (Input.GetButtonDown("Jump"))
+        {
+            if (Time.time - lastJumpTime < doubleJumpThreshold)
+            {
+                isFlying = !isFlying;
+                jumpCount = 0;
+                Debug.Log(isFlying ? "비행 모드 ON" : "비행 모드 OFF");
+            }
+            lastJumpTime = Time.time;
+        }
+    }
+
+    void HandleMovement()
+    {
+        Vector3 move = transform.right * Input.GetAxis("Horizontal") + transform.forward * Input.GetAxis("Vertical");
+        Vector3 velocity = move * moveSpeed;
+
+        if (isFlying)
+        {
+            if (Input.GetButton("Jump"))
+                velocity += Vector3.up * verticalSpeed;
+            if (Input.GetKey(KeyCode.LeftShift))
+                velocity += Vector3.down * verticalSpeed;
+
+            controller.Move(velocity * Time.deltaTime);
+        }
+        else
+        {
+            velocity.y += Physics.gravity.y * Time.deltaTime;
+            controller.Move(velocity * Time.deltaTime);
+        }
+    }
+}

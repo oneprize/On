@@ -34588,7 +34588,7 @@ MonoBehaviour:
   walkSpeed: 3
   runSpeed: 6
   rotationSpeed: 720
-  jumpForce: 5
+  jumpForce: 2
   gravity: -9.81
   groundCheckDistance: 0.2
   animator: {fileID: 3827572785089259061}

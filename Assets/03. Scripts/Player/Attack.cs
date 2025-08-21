@@ -29,6 +29,17 @@ public class Attack : MonoBehaviour
         {
             AttackCount = 0;
             animator.SetInteger("AttackCount", AttackCount);
+
+
+        }
+
+        if (Input.GetMouseButton(1))
+        {
+            animator.SetBool("isDefending", true);
+        }
+        else
+        {
+            animator.SetBool("isDefending", false);
         }
     }
 }

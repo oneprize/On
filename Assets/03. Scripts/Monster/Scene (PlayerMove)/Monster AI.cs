@@ -18,6 +18,7 @@ public class MonsterAI : MonoBehaviour
 
     private float groggyTime = 2f; // 그로기 지속 시간
     private bool isGroggy = false;
+    private bool canMove = true;
 
 
     void Start()
@@ -28,6 +29,22 @@ public class MonsterAI : MonoBehaviour
 
     void Update()
     {
+        // Attack, Groggy, Recover 애니메이션이 재생 중이면 움직임을 막습니다.
+        // GetCurrentAnimatorStateInfo는 현재 재생 중인 상태의 정보를 가져옵니다.
+        // "Attack"은 애니메이터 컨트롤러의 공격 상태 이름으로 바꿔주세요.
+        bool isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack");
+        bool isGroggying = animator.GetCurrentAnimatorStateInfo(0).IsTag("Groggy");
+        bool isRecovering = animator.GetCurrentAnimatorStateInfo(0).IsTag("Recover");
+
+        canMove = !(isAttacking || isGroggying || isRecovering);
+
+        // canMove 값에 따라 몬스터의 이동 로직을 제어합니다.
+        // 예를 들어, NavMeshAgent를 사용한다면 아래와 같이 제어할 수 있습니다.
+        if (agent != null)
+        {
+            agent.isStopped = !canMove;
+        }
+
         if (isGroggy || currentState == State.Attack || currentState == State.Idle)
         {
             agent.isStopped = true;

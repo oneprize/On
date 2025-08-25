@@ -144550,22 +144550,8 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 1.1333333
-    functionName: Ev_EndKnockdown2Window
-    data: 
-    objectReferenceParameter: {fileID: 0}
-    floatParameter: 0
-    intParameter: 0
-    messageOptions: 0
   - time: 1.6
     functionName: Ev_StartKnockdown2Window
-    data: 
-    objectReferenceParameter: {fileID: 0}
-    floatParameter: 0
-    intParameter: 0
-    messageOptions: 0
-  - time: 1.7333333
-    functionName: Ev_EndKnockdown2Window
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
@@ -144579,7 +144565,7 @@ AnimationClip:
     intParameter: 0
     messageOptions: 0
   - time: 2.5333333
-    functionName: AllowParryTiming
+    functionName: Ev_StartParryableWindow
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0

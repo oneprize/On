@@ -2,36 +2,32 @@ using UnityEngine;
 
 public class MonsterAttackEvents : MonoBehaviour
 {
+    public EnemyParryReceiver enemyReceiver;
     public EnemyWeapon weapon;
 
-    // 패링 가능 스윙(기본 공격) 시작/종료
-    // 필요하면 애니메이션에 이 이벤트를 배치
     public void Ev_StartParryableWindow()
     {
-        if (weapon == null) return;
-        weapon.useKnockdown2 = false;   // 패링 가능 모드
-        weapon.BeginAttackWindow();
+        if (ParryManager.Instance == null || weapon == null || enemyReceiver == null) return;
+
+        // 1. EnemyWeapon에 일반 공격임을 알립니다.
+        weapon.SetAttackType(false);
+        // 2. 패리 타이밍을 시작합니다.
+        ParryManager.Instance.StartParryWindow(enemyReceiver.gameObject, weapon, 0.4f, false);
     }
 
-    public void Ev_EndParryableWindow()
-    {
-        if (weapon == null) return;
-        weapon.EndAttackWindow();
-    }
-
-    // 패링 불가 일반 공격(맞으면 바로 knockdown2) 시작/종료
-    // 이번 건 이 이벤트를 쓰면 됨
     public void Ev_StartKnockdown2Window()
     {
-        if (weapon == null) return;
-        weapon.useKnockdown2 = true;    // 패링 불가 모드
-        weapon.BeginAttackWindow();
+        if (ParryManager.Instance == null || weapon == null || enemyReceiver == null) return;
+
+        // 1. EnemyWeapon에 강한 공격임을 알립니다.
+        weapon.SetAttackType(true);
+        // 2. 패리 타이밍을 시작합니다.
+        ParryManager.Instance.StartParryWindow(enemyReceiver.gameObject, weapon, 0.4f, true);
     }
 
-    public void Ev_EndKnockdown2Window()
+    public void Ev_EndAttackWindow()
     {
         if (weapon == null) return;
         weapon.EndAttackWindow();
-        weapon.useKnockdown2 = false;   // 다음 스윙을 위해 리셋(선택)
     }
 }

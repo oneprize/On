@@ -124,19 +124,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 69e7d57292a099546a2fc3807d14ed1c, type: 3}
   m_PrefabInstance: {fileID: 1158429918}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &33814024
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 33814023}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d103b1eb92a0d604a898c3b2ec8df3d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 33814028}
 --- !u!114 &33814025
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,6 +159,12 @@ MonoBehaviour:
   groundCheckDistance: 0.2
   animator: {fileID: 33814028}
   cam: {fileID: 1704967584}
+  isAttacking: 0
+  isMoving: 0
+  isDefending: 0
+  isTurning: 0
+  lastInputTime: 0
+  resetDelay: 1
 --- !u!143 &33814027
 CharacterController:
   m_ObjectHideFlags: 0
@@ -715,12 +708,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5e450463787b434ba15a15f428f67c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultParryWindow: 0.3
+  defaultParryWindow: 1
   useSlowMotion: 1
-  slowMotionScale: 0.3
-  slowMotionDuration: 0.6
+  slowMotionScale: 0.1
+  slowMotionDuration: 0.1
   playerHitReceiver: {fileID: 883188633}
   parrySuccessIFrame: 0.12
+  isStrongAttack: 0
   parryVFXPrefab: {fileID: 1111920320}
   vfxSpawnPoint: {fileID: 276037929}
 --- !u!114 &585602601
@@ -1303,6 +1297,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Bahamut Model
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 412f2b36178816244ad8c1d600a63123, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1392429069006809684, guid: 412f2b36178816244ad8c1d600a63123, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -1529,9 +1527,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 69e7d57292a099546a2fc3807d14ed1c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 33814025}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 69e7d57292a099546a2fc3807d14ed1c, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 33814024}
   m_SourcePrefab: {fileID: 100100000, guid: 69e7d57292a099546a2fc3807d14ed1c, type: 3}
 --- !u!1 &1167684068
 GameObject:
@@ -1891,6 +1886,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5976347816894167912, guid: 31e77faafc1e1c54fb59e3526e12ba72, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 6.7
+      objectReference: {fileID: 0}
     - target: {fileID: 6406108791465628975, guid: 31e77faafc1e1c54fb59e3526e12ba72, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -7165,6 +7164,7 @@ GameObject:
   - component: {fileID: 1704967582}
   - component: {fileID: 1704967585}
   - component: {fileID: 1704967586}
+  - component: {fileID: 1704967588}
   - component: {fileID: 1704967587}
   m_Layer: 0
   m_Name: Main Camera
@@ -7325,6 +7325,20 @@ MonoBehaviour:
   blendDistance: 0
   weight: 0.924
   sharedProfile: {fileID: 11400000, guid: a23bbb265b7abb2489661691e598bf8e, type: 2}
+--- !u!114 &1704967588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1704967581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b78fce2aace113540a4a65f31c5a580e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  originalPos: {x: 0, y: 0, z: 0}
+  isShaking: 0
 --- !u!114 &2092279256
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -35542,6 +35556,12 @@ MonoBehaviour:
   groundCheckDistance: 0.2
   animator: {fileID: 3827572785089259061}
   cam: {fileID: 1704967584}
+  isAttacking: 0
+  isMoving: 0
+  isDefending: 0
+  isTurning: 0
+  lastInputTime: 0
+  resetDelay: 1
 --- !u!4 &2998254540594808324
 Transform:
   m_ObjectHideFlags: 0
@@ -35653,7 +35673,6 @@ GameObject:
   - component: {fileID: 5788071979766618332}
   - component: {fileID: 5472453412358052485}
   - component: {fileID: 2756474727671393332}
-  - component: {fileID: 7324493863875336174}
   - component: {fileID: 6039229183208808577}
   - component: {fileID: 585602600}
   - component: {fileID: 585602601}
@@ -49992,7 +50011,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   monsterAI: {fileID: 2756474727671393332}
-  useKnockdown2: 0
+  isStrongAttack: 0
 --- !u!1 &6044174576764718377
 GameObject:
   m_ObjectHideFlags: 0
@@ -52941,21 +52960,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 5858236464602093540, guid: 32a6066e1fb22804e85f81e243be9b33, type: 3}
---- !u!114 &7324493863875336174
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3035775926625239549}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34780e63247ac244b8410ae59ae1aecd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  parryDuration: 0.3
-  enemyReceiver: {fileID: 585602601}
-  enemyWeapon: {fileID: 6039229183208808577}
 --- !u!4 &7327764649177384482
 Transform:
   m_ObjectHideFlags: 0
@@ -54830,7 +54834,6 @@ MonoBehaviour:
   origin: {fileID: 4940838177114989439}
   maxDistance: 4
   portalMask:
-    serializedVersion: 2
     m_Bits: 1024
   useSphereCast: 1
   sphereRadius: 0.25
@@ -54839,6 +54842,8 @@ MonoBehaviour:
   overlayCanvas: {fileID: 675148590}
   overlayText: E - open
   asyncLoad: 1
+  _current: {fileID: 0}
+  _loading: 0
 --- !u!114 &8009707336454764978
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54852,6 +54857,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 3827572785089259061}
+  playerMovement: {fileID: 0}
+  hashAttackCount: 1757041991
+  AttackCount: 0
+  lastInputTime: 0
+  resetDelay: 0.4
+  isDefending: 0
 --- !u!1 &8022116893773203482
 GameObject:
   m_ObjectHideFlags: 0
@@ -56084,6 +56095,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85fc2c9308a1fcc4cb7481755d386c1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyReceiver: {fileID: 585602601}
   weapon: {fileID: 6039229183208808577}
 --- !u!4 &8534900270613497846
 Transform:

@@ -12,7 +12,7 @@ public class MonsterAI : MonoBehaviour
     private Animator animator;
     private ParryManager parryManager;
 
-    private enum State { Idle, Chase, Attack, Groggy } // 상태에 Groggy 추가
+    private enum State { Idle, Chase, Attack, Groggy } // 상태 움직임
     private State currentState = State.Idle;
 
     private float lastAttackTime = -999f;

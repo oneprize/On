@@ -10,6 +10,7 @@ public class MonsterAI : MonoBehaviour
 
     private NavMeshAgent agent;
     private Animator animator;
+    private ParryManager parryManager;
 
     private enum State { Idle, Chase, Attack, Groggy } // 상태에 Groggy 추가
     private State currentState = State.Idle;
@@ -18,42 +19,36 @@ public class MonsterAI : MonoBehaviour
 
     private float groggyTime = 2f; // 그로기 지속 시간
     private bool isGroggy = false;
+    private bool isWalking = false;
     private bool canMove = true;
+    public bool isAttacking=false;
 
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        parryManager = GetComponent<ParryManager>();
     }
 
     void Update()
     {
-        // Attack, Groggy, Recover 애니메이션이 재생 중이면 움직임을 막습니다.
-        // GetCurrentAnimatorStateInfo는 현재 재생 중인 상태의 정보를 가져옵니다.
-        // "Attack"은 애니메이터 컨트롤러의 공격 상태 이름으로 바꿔주세요.
-        bool isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack");
-        bool isGroggying = animator.GetCurrentAnimatorStateInfo(0).IsTag("Groggy");
-        bool isRecovering = animator.GetCurrentAnimatorStateInfo(0).IsTag("Recover");
+        // 현재 애니메이션 상태를 가져옵니다.
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
 
-        canMove = !(isAttacking || isGroggying || isRecovering);
-
-        // canMove 값에 따라 몬스터의 이동 로직을 제어합니다.
-        // 예를 들어, NavMeshAgent를 사용한다면 아래와 같이 제어할 수 있습니다.
-        if (agent != null)
+        // 공격 태그가 있는 애니메이션이 재생 중이거나 그로기 상태일 때
+        if (stateInfo.IsTag("Attack") || isGroggy)
         {
-            agent.isStopped = !canMove;
-        }
-
-        if (isGroggy || currentState == State.Attack || currentState == State.Idle)
-        {
+            // NavMeshAgent의 이동을 중지합니다.
             agent.isStopped = true;
         }
+        // 그 외의 상황에서는 이동을 허용합니다.
         else
         {
             agent.isStopped = false;
         }
 
+        // 그로기 상태일 때는 다른 행동 로직을 실행하지 않고 함수를 종료합니다.
         if (isGroggy) return;
 
         float distance = Vector3.Distance(transform.position, player.position);
@@ -63,11 +58,9 @@ public class MonsterAI : MonoBehaviour
             case State.Idle:
                 HandleIdle(distance);
                 break;
-
             case State.Chase:
                 HandleChase(distance);
                 break;
-
             case State.Attack:
                 HandleAttack(distance);
                 break;
@@ -87,6 +80,10 @@ public class MonsterAI : MonoBehaviour
 
     void HandleChase(float distance)
     {
+        if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        {
+            isWalking = false;            
+        }
         if (distance > detectionRange)
         {
             currentState = State.Idle;
@@ -114,22 +111,41 @@ public class MonsterAI : MonoBehaviour
 
     void HandleAttack(float distance)
     {
-        transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
-
-        if (distance > attackRange)
+        if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        {          
+            isWalking = false;
+        }
+        
+        // 공격 애니메이션이 재생 중이라면 다른 상태로 전환하지 않고 종료
+        if (isAttacking)
         {
-            currentState = State.Chase;
+            // 공격 중에는 플레이어를 향하도록 계속 회전
+            transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
             return;
         }
 
-        if (Time.time - lastAttackTime >= attackCooldown)
+        // 공격 애니메이션이 끝난 후의 로직
+        if (distance > attackRange)
         {
-            animator.SetTrigger("attack");
-            lastAttackTime = Time.time;
+            // 공격 범위 밖으로 벗어나면 추적 상태로 전환
+            currentState = State.Chase;
+        }
+        else
+        {
+            // 공격 범위 내에 있으면 쿨다운 확인 후 다시 공격
+            if (Time.time - lastAttackTime >= attackCooldown)
+            {
+                animator.SetTrigger("attack");
+                lastAttackTime = Time.time;
+            }
         }
     }
     public void EnterGroggy()
     {
+        if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Groggy"))
+        {
+            isWalking = false;
+        }
         if (isGroggy) return;
 
         isGroggy = true;

@@ -4,6 +4,7 @@ using System.Collections;
 public class ParryManager : MonoBehaviour
 {
     public static ParryManager Instance;
+    public PlayerMovement playerMovement;
 
     [Header("패링 창 기본값(초)")]
     public float defaultParryWindow = 0.4f;
@@ -57,8 +58,14 @@ public class ParryManager : MonoBehaviour
         // 패링 타이밍 중 플레이어 입력 감지
         if (isParryWindow)
         {
-            // 클릭형 성공 판정
-            if (Input.GetButtonDown("Fire1"))
+            // (추가) 방어 중이라면 무조건 패링 성공
+            if (playerMovement != null && playerMovement.IsDefending())
+            {
+                OnParrySuccess();
+                return; // 성공했으므로 추가 로직 실행하지 않고 종료
+            }
+                        // 클릭형 성공 판정
+                if (Input.GetButtonDown("Fire1"))
             {
                 float elapsed = Time.unscaledTime - parryStartUnscaled;
                 if (elapsed <= activeWindowDuration)
@@ -153,10 +160,12 @@ public class ParryManager : MonoBehaviour
         {
             if (isStrongAttack)
             {
+                Debug.Log("Knockdown2");
                 playerHitReceiver.TriggerKnockdown2();
             }
             else
             {
+                Debug.Log("Knockdown1");
                 playerHitReceiver.TriggerKnockdown();
             }
         }

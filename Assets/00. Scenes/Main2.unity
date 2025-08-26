@@ -7337,8 +7337,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b78fce2aace113540a4a65f31c5a580e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  originalPos: {x: 0, y: 0, z: 0}
-  isShaking: 0
 --- !u!114 &2092279256
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15484,6 +15482,7 @@ MonoBehaviour:
   detectionRange: 10
   attackRange: 1.5
   attackCooldown: 10
+  isAttacking: 0
 --- !u!1 &2766482347780953220
 GameObject:
   m_ObjectHideFlags: 0
@@ -54830,20 +54829,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: caa221d8847146b4f866fe73739430de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cam: {fileID: 1704967583}
-  origin: {fileID: 4940838177114989439}
-  maxDistance: 4
-  portalMask:
-    m_Bits: 1024
-  useSphereCast: 1
-  sphereRadius: 0.25
-  fovDot: 0.75
-  interactKey: 101
-  overlayCanvas: {fileID: 675148590}
-  overlayText: E - open
-  asyncLoad: 1
-  _current: {fileID: 0}
-  _loading: 0
 --- !u!114 &8009707336454764978
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54856,13 +54841,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d103b1eb92a0d604a898c3b2ec8df3d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 3827572785089259061}
-  playerMovement: {fileID: 0}
-  hashAttackCount: 1757041991
-  AttackCount: 0
-  lastInputTime: 0
-  resetDelay: 0.4
-  isDefending: 0
 --- !u!1 &8022116893773203482
 GameObject:
   m_ObjectHideFlags: 0

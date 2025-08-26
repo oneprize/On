@@ -93,6 +93,7 @@ public class PlayerMovement : MonoBehaviour
         animator.SetFloat("moveX", animInput.x);
         animator.SetFloat("moveY", animInput.y);
 
+        
         this.isMoving = isMoving;
 
         // 현재 이동 방향을 다음 프레임을 위해 저장
@@ -125,10 +126,23 @@ public class PlayerMovement : MonoBehaviour
         controller.Move(velocity * Time.deltaTime);
     }
 
+    public bool IsAttacking()
+    {
+        return isAttacking;
+    }
+
+    public bool IsDefending()
+    {
+        return isDefending;
+    }
     // 공격 및 방어 로직을 담당하는 새로운 함수
     void HandleAttackAndDefense()
     {
         if (isMoving) return;
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle")) 
+        { 
+            isAttacking = false;
+        }
         // 공격 로직
         if (Input.GetButtonDown("Fire1"))
         {

@@ -21,6 +21,7 @@ public class MonsterAttackEvents : MonoBehaviour
 
         // 1. EnemyWeapon에 강한 공격임을 알립니다.
         weapon.SetAttackType(true);
+        Debug.Log("강한 공격실행");
         // 2. 패리 타이밍을 시작합니다.
         ParryManager.Instance.StartParryWindow(enemyReceiver.gameObject, weapon, 0.4f, true);
     }
@@ -29,5 +30,6 @@ public class MonsterAttackEvents : MonoBehaviour
     {
         if (weapon == null) return;
         weapon.EndAttackWindow();
+        weapon.SetAttackType(false);
     }
 }

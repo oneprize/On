@@ -41,7 +41,7 @@ public class LockOnCameraController : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(toggleKey))
-        {
+        {           
             if (isLocked) Unlock();
             else TryLock();
         }
@@ -77,6 +77,7 @@ public class LockOnCameraController : MonoBehaviour
 
     void TryLock()
     {
+        Debug.Log("Å¸°Ù ·Ï ¿Â");
         Transform best = FindBestTarget();
         if (!best) return;
 
@@ -91,6 +92,7 @@ public class LockOnCameraController : MonoBehaviour
 
     void Unlock()
     {
+        Debug.Log("Å¸°Ù ¾ð ·Ï");
         if (lockOnCam)
         {
             lockOnCam.Priority = 0;

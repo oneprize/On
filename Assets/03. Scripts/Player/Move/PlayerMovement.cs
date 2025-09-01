@@ -38,13 +38,14 @@ public class PlayerMovement : MonoBehaviour
     {
         HandleMovement();
         HandleJump();
-        HandleAttackAndDefense(); // 공격 및 방어 로직을 통합한 함수 호출
+        HandleAttack(); 
+        HandDefense();
     }
 
     void HandleMovement()
     {
-        // 공격 또는 방어 중일 때는 이동을 막음
-        if (isAttacking || isDefending) return;
+        // 공격 중일 때는 이동을 막음
+        if (isAttacking) return;
 
         Vector3 inputDir = GetInputDirection();
         bool isMoving = inputDir.magnitude > 0.1f;
@@ -136,7 +137,7 @@ public class PlayerMovement : MonoBehaviour
         return isDefending;
     }
     // 공격 및 방어 로직을 담당하는 새로운 함수
-    void HandleAttackAndDefense()
+    void HandleAttack()
     {
         if (isMoving) return;
         if (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle")) 
@@ -160,13 +161,16 @@ public class PlayerMovement : MonoBehaviour
             AttackCount = 0;
             lastInputTime = 0;
             animator.SetInteger("AttackCount", AttackCount);
-        }
+        }       
+    }
 
+    public void HandDefense()
+    {
+        if (isMoving || isAttacking) return;
         // 방어 로직
         isDefending = Input.GetMouseButton(1);
         animator.SetBool("isDefending", isDefending);
-    }
-
+    }    
     // 애니메이션 이벤트에서 호출할 함수
     public void ResetAttack()
     {

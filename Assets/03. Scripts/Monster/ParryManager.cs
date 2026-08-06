@@ -59,17 +59,25 @@ public class ParryManager : MonoBehaviour
         if (isParryWindow)
         {
             // (추가) 방어 중이라면 무조건 패링 성공
-            if (playerMovement != null && playerMovement.IsDefending())
-            {
-                OnParrySuccess();
-                return; // 성공했으므로 추가 로직 실행하지 않고 종료
-            }
-                        // 클릭형 성공 판정
-                if (Input.GetButtonDown("Fire1"))
+            //if (playerMovement != null && playerMovement.IsDefending())
+            if (Input.GetMouseButton(1))
             {
                 float elapsed = Time.unscaledTime - parryStartUnscaled;
                 if (elapsed <= activeWindowDuration)
                 {
+                    Debug.Log("방어 패리");
+                    OnParrySuccess();
+                    return; // 성공했으므로 추가 로직 실행하지 않고 종료
+                }
+                    
+            }
+                        // 클릭형 성공 판정
+            if (Input.GetButtonDown("Fire1"))
+            {
+                float elapsed = Time.unscaledTime - parryStartUnscaled;
+                if (elapsed <= activeWindowDuration)
+                {
+                    Debug.Log("공격 패리");
                     OnParrySuccess();
                 }
             }

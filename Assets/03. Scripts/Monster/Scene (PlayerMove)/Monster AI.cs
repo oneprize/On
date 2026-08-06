@@ -1,5 +1,7 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public class MonsterAI : MonoBehaviour
 {
@@ -7,10 +9,13 @@ public class MonsterAI : MonoBehaviour
     public float detectionRange = 10f;
     public float attackRange = 2f;
     public float attackCooldown = 1.5f;
+    public float MoveSpeed = 3f;
 
     private NavMeshAgent agent;
     private Animator animator;
     private ParryManager parryManager;
+    private GameObject _lockTarget;
+    private Vector3 _destPos;
 
     private enum State { Idle, Chase, Attack, Groggy } // 상태 움직임
     private State currentState = State.Idle;
@@ -18,10 +23,13 @@ public class MonsterAI : MonoBehaviour
     private float lastAttackTime = -999f;
 
     private float groggyTime = 2f; // 그로기 지속 시간
+    private float checkTime = 5f;
     private bool isGroggy = false;
     private bool isWalking = false;
     private bool canMove = true;
     public bool isAttacking=false;
+
+    private Coroutine _idleRoutine;
 
 
     void Start()
@@ -51,7 +59,9 @@ public class MonsterAI : MonoBehaviour
         // 그로기 상태일 때는 다른 행동 로직을 실행하지 않고 함수를 종료합니다.
         if (isGroggy) return;
 
-        float distance = Vector3.Distance(transform.position, player.position);
+        
+
+    float distance = Vector3.Distance(transform.position, player.position);
 
         switch (currentState)
         {
@@ -69,48 +79,64 @@ public class MonsterAI : MonoBehaviour
 
     void HandleIdle(float distance)
     {
-        animator.SetBool("isWalking", false);
+        Debug.Log("출력");
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null) { return; }
 
-        if (distance < detectionRange)
-        {
-            currentState = State.Chase;
-            animator.SetBool("isWalking", true);
-        }
+        agent.isStopped = true;
+        StartCoroutine(Checking());
+        animator.SetTrigger("Check");
+
+        currentState = State.Attack;
     }
 
     void HandleChase(float distance)
     {
-        if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        const float Stopping_Chase_Range = 5f;
+      
+        // 플레이어가 존재하면 추적 로직 실행
+        if (player != null)
         {
-            isWalking = false;            
-        }
-        if (distance > detectionRange)
-        {
-            currentState = State.Idle;
-            agent.ResetPath();
-            return;
-        }
+            if (distance <= detectionRange)
+            {
+                isWalking = true;
+                animator.SetBool("isWalking", true);
+            }
+            else if (distance > detectionRange + 2f) 
+            {
+                isWalking = false;
+                animator.SetBool("isWalking", false);
+                agent.isStopped = true;
+                return;
+            }
 
-        // 플레이어를 향해 회전
-        Vector3 dir = (player.position - transform.position).normalized;
-        dir.y = 0f;
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
+            // 추적 중이면 플레이어 반경 5f 까지 이동
+            if (isWalking)
+            {
+                Vector3 dirToPlayer = (player.position - transform.position).normalized;
 
-        if (distance > attackRange)
-        {
-            agent.SetDestination(player.position);
-            animator.SetBool("isWalking", true);
-        }
-        else
-        {
-            agent.ResetPath();
-            animator.SetBool("isWalking", false);
-            currentState = State.Attack;
-        }
+                // 플레이어에서 5f 뒤쪽 위치를 목적지로 설정
+                Vector3 targetPos = player.position - dirToPlayer * Stopping_Chase_Range;
+
+                agent.isStopped = false;
+                agent.SetDestination(targetPos);
+            }    
+
+            // 몬스터가 플레이어를 향해 부드럽게 회전
+            Vector3 dir = (player.position - transform.position).normalized;
+            dir.y = 0f;
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
+
+            if (distance <= Stopping_Chase_Range + 0.1f)
+            {
+                currentState = State.Idle;
+            }
+        }       
     }
 
     void HandleAttack(float distance)
     {
+        Debug.Log("입력");
         if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {          
             isWalking = false;
@@ -162,5 +188,11 @@ public class MonsterAI : MonoBehaviour
         currentState = State.Idle; // 다시 idle 상태로 복귀
     }
 
-
+    private System.Collections.IEnumerator Checking() 
+    { 
+        yield return new WaitForSeconds(checkTime); 
+        animator.SetTrigger("Check"); 
+        agent.isStopped = true; 
+        currentState = State.Attack; 
+    }
 }

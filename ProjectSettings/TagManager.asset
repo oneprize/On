@@ -10,6 +10,10 @@ TagManager:
   - Ground
   - PalyerWeapon
   - EnemyWeapon
+  - Road1
+  - Road2
+  - Road3
+  - Road4
   layers:
   - Default
   - TransparentFX
@@ -23,13 +27,13 @@ TagManager:
   - Ground
   - Portal
   - Enemy
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Object
+  - Road1
+  - Road2
+  - Road3
+  - Road4
+  - block
+  - Player
   - 
   - 
   - 

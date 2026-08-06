@@ -9,6 +9,11 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce = 5f;
     public float gravity = -9.81f;
     public float groundCheckDistance = 0.2f; // 바닥 체크용 거리
+    private float turningTimer = 0f;
+    private float turningHoldTime = 0.2f;
+
+    int jumpCount = 0; // 플레이어가 점프한 횟수
+    const int maxJumps = 2; // 최대 점프 허용 횟수
 
     public Animator animator;
     public Transform cam;
@@ -39,13 +44,13 @@ public class PlayerMovement : MonoBehaviour
         HandleMovement();
         HandleJump();
         HandleAttack(); 
-        HandDefense();
+        HandleDefense();
     }
 
     void HandleMovement()
     {
         // 공격 중일 때는 이동을 막음
-        if (isAttacking) return;
+        if (isAttacking || isDefending) return;
 
         Vector3 inputDir = GetInputDirection();
         bool isMoving = inputDir.magnitude > 0.1f;
@@ -56,25 +61,25 @@ public class PlayerMovement : MonoBehaviour
         currentMoveDirection.y = 0f;
         currentMoveDirection.Normalize();
 
-        // 180도 방향 전환 감지 로직
-        // 현재 이동 방향과 이전 이동 방향을 비교하여 반대 방향으로 입력했는지 확인
-        // `isMoving` 상태가 활성화되어 있어야 합니다.
-        if (lastMoveDirection.magnitude > 0.1f && currentMoveDirection.magnitude > 0.1f)
+        if (isMoving && lastMoveDirection.magnitude > 0.1f)
         {
-            // 두 벡터의 내적(Dot product)이 -0.95f 이하이면 거의 반대 방향
-            if (Vector3.Dot(lastMoveDirection.normalized, currentMoveDirection.normalized) < -0.95f)
-            {
-                isTurning = true;
-            }
-            else
-            {
-                isTurning = false;
-            }
+            float dot = Vector3.Dot(lastMoveDirection.normalized,
+                                    currentMoveDirection.normalized);
+            if (dot < -0.8f)
+                turningTimer = turningHoldTime; // 감지 시 타이머 세팅
+        }
+
+        // 타이머가 남아있으면 isTurning 유지
+        if (turningTimer > 0f)
+        {
+            turningTimer -= Time.deltaTime;
+            isTurning = true;
         }
         else
         {
             isTurning = false;
         }
+
 
         if (isMoving)
         {
@@ -82,7 +87,10 @@ public class PlayerMovement : MonoBehaviour
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
 
             float speed = isRunning ? runSpeed : walkSpeed;
+            if (isTurning) speed *= 0.3f;
             controller.Move(currentMoveDirection * speed * Time.deltaTime);
+
+            lastMoveDirection = currentMoveDirection;
         }
 
         // 애니메이터 파라미터 업데이트
@@ -94,32 +102,41 @@ public class PlayerMovement : MonoBehaviour
         animator.SetFloat("moveX", animInput.x);
         animator.SetFloat("moveY", animInput.y);
 
-        
-        this.isMoving = isMoving;
 
-        // 현재 이동 방향을 다음 프레임을 위해 저장
-        lastMoveDirection = currentMoveDirection;
+        this.isMoving = isMoving;
     }
 
+    
     void HandleJump()
     {
-        // Raycast로 바닥 체크
+        // Raycast를 사용하여 바닥에 닿았는지 확인
         isGrounded = Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance + 0.1f);
 
-        if (isGrounded && velocity.y < 0)
+        if (isGrounded)
         {
-            velocity.y = -2f; // CharacterController에서 바닥에 붙게
+            // 땅에 닿으면 점프 횟수를 초기화
+            jumpCount = 0;
             isJumping = false;
             animator.SetBool("isJumping", false);
+
+            animator.SetInteger("jumpCount", jumpCount);
+            // CharacterController가 바닥에 잘 붙도록 y축 속도 조정
+            if (velocity.y < 0)
+            {
+                velocity.y = -2f;
+            }
         }
 
         animator.SetBool("isGrounded", isGrounded);
 
-        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        // 스페이스바를 누르고, 현재 점프 횟수가 최대 점프 횟수 미만일 때
+        if (Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumps)
         {
             velocity.y = jumpForce;
             isJumping = true;
             animator.SetBool("isJumping", true);
+            jumpCount++; // 점프 횟수 1 증가
+            animator.SetInteger("jumpCount", jumpCount);
         }
 
         // 중력 적용
@@ -139,7 +156,7 @@ public class PlayerMovement : MonoBehaviour
     // 공격 및 방어 로직을 담당하는 새로운 함수
     void HandleAttack()
     {
-        if (isMoving) return;
+        if (isMoving || isDefending ) return;
         if (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle")) 
         { 
             isAttacking = false;
@@ -164,12 +181,13 @@ public class PlayerMovement : MonoBehaviour
         }       
     }
 
-    public void HandDefense()
+    public void HandleDefense()
     {
-        if (isMoving || isAttacking) return;
+        if (isAttacking) return;
         // 방어 로직
         isDefending = Input.GetMouseButton(1);
         animator.SetBool("isDefending", isDefending);
+        // isDefending = true;
     }    
     // 애니메이션 이벤트에서 호출할 함수
     public void ResetAttack()

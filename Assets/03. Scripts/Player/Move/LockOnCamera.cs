@@ -81,22 +81,30 @@ public class LockOnCameraController : MonoBehaviour
         Transform best = FindBestTarget();
         if (!best) return;
 
+        isLocked = true;
+        currentTarget = best;
+
         // 우선순위로 전환
         if (followCam) followCam.Priority = 10;
         if (lockOnCam)
         {
             lockOnCam.Priority = 20;
             lockOnCam.LookAt = best;   // CM3에서도 LookAt/Follow 속성 사용 가능
+            lockOnCam.Follow = player;
         }
     }
 
     void Unlock()
     {
         Debug.Log("타겟 언 록");
+        isLocked = false;
+        currentTarget = null;
+
         if (lockOnCam)
         {
             lockOnCam.Priority = 0;
             lockOnCam.LookAt = null;
+            lockOnCam.Follow = null;
         }
         if (followCam) followCam.Priority = 10;
     }

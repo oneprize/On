@@ -8,12 +8,12 @@ public class PlayerMovement : MonoBehaviour
     public float rotationSpeed = 720f;
     public float jumpForce = 5f;
     public float gravity = -9.81f;
-    public float groundCheckDistance = 0.2f; // ¹Ù´Ú Ã¼Å©¿ë °Å¸®
+    public float groundCheckDistance = 0.2f; // ë°”ë‹¥ ì²´í¬ìš© ê±°ë¦¬
     private float turningTimer = 0f;
     private float turningHoldTime = 0.2f;
 
-    int jumpCount = 0; // ÇÃ·¹ÀÌ¾î°¡ Á¡ÇÁÇÑ È½¼ö
-    const int maxJumps = 2; // ÃÖ´ë Á¡ÇÁ Çã¿ë È½¼ö
+    int jumpCount = 0; // í”Œë ˆì´ì–´ê°€ ì í”„í•œ íšŸìˆ˜
+    const int maxJumps = 2; // ìµœëŒ€ ì—°ì† ì í”„ íšŸìˆ˜
 
     public Animator animator;
     public Transform cam;
@@ -22,17 +22,17 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 velocity;
     private bool isJumping = false;
     private bool isGrounded = false;
-    private Vector3 lastMoveDirection; // ÀÌÀü ÀÌµ¿ ¹æÇâÀ» ÀúÀåÇÒ º¯¼ö
+    private Vector3 lastMoveDirection; // ì´ì „ ì´ë™ ë°©í–¥ì„ ì €ì¥í•  ë³€ìˆ˜
 
     [SerializeField] private bool isAttacking = false;
     [SerializeField] private bool isMoving = false;
     [SerializeField] private bool isDefending = false;
-    [SerializeField] private bool isTurning = false; // ¹æÇâ ÀüÈ¯ »óÅÂ º¯¼ö Ãß°¡
+    [SerializeField] private bool isTurning = false; // ë°©í–¥ ì „í™˜ ê°ì§€ ë³€ìˆ˜ ì¶”ê°€
 
-    // °ø°İ ·ÎÁ÷À» À§ÇÑ º¯¼ö
+    // ì½¤ë³´ ê´€ë ¨ ë³€ìˆ˜ ì •ì˜
     private int AttackCount = 0;
     [SerializeField] private float lastInputTime = 0f;
-    [SerializeField] private float resetDelay = 1f; // ÀÔ·Â ¾øÀ» ¶§ ÃÊ±âÈ­±îÁöÀÇ ½Ã°£
+    [SerializeField] private float resetDelay = 1f; // ì…ë ¥ ì—†ì„ ë•Œ ì´ˆê¸°í™”ê¹Œì§€ì˜ ì‹œê°„
 
     void Start()
     {
@@ -43,20 +43,20 @@ public class PlayerMovement : MonoBehaviour
     {
         HandleMovement();
         HandleJump();
-        HandleAttack(); 
+        HandleAttack();
         HandleDefense();
     }
 
     void HandleMovement()
     {
-        // °ø°İ ÁßÀÏ ¶§´Â ÀÌµ¿À» ¸·À½
+        // ê³µê²© ë˜ëŠ” ë°©ì–´ ì¤‘ì¼ ë•ŒëŠ” ì´ë™ì„ ë§‰ëŠ”ë‹¤
         if (isAttacking || isDefending) return;
 
         Vector3 inputDir = GetInputDirection();
         bool isMoving = inputDir.magnitude > 0.1f;
         bool isRunning = isMoving && Input.GetKey(KeyCode.LeftShift);
 
-        // ÇöÀç ÀÌµ¿ ¹æÇâÀ» °è»êÇÕ´Ï´Ù.
+        // í˜„ì¬ ì´ë™ ë°©í–¥ì„ ê³„ì‚°í•©ë‹ˆë‹¤.
         Vector3 currentMoveDirection = cam.forward * Input.GetAxisRaw("Vertical") + cam.right * Input.GetAxisRaw("Horizontal");
         currentMoveDirection.y = 0f;
         currentMoveDirection.Normalize();
@@ -66,10 +66,10 @@ public class PlayerMovement : MonoBehaviour
             float dot = Vector3.Dot(lastMoveDirection.normalized,
                                     currentMoveDirection.normalized);
             if (dot < -0.8f)
-                turningTimer = turningHoldTime; // °¨Áö ½Ã Å¸ÀÌ¸Ó ¼¼ÆÃ
+                turningTimer = turningHoldTime; // ë°˜ì „ ì‹œ íƒ€ì´ë¨¸ ì‹œì‘
         }
 
-        // Å¸ÀÌ¸Ó°¡ ³²¾ÆÀÖÀ¸¸é isTurning À¯Áö
+        // íƒ€ì´ë¨¸ê°€ ë‚¨ì•„ìˆìœ¼ë©´ isTurning ìœ ì§€
         if (turningTimer > 0f)
         {
             turningTimer -= Time.deltaTime;
@@ -93,10 +93,10 @@ public class PlayerMovement : MonoBehaviour
             lastMoveDirection = currentMoveDirection;
         }
 
-        // ¾Ö´Ï¸ŞÀÌÅÍ ÆÄ¶ó¹ÌÅÍ ¾÷µ¥ÀÌÆ®
+        // ì• ë‹ˆë©”ì´í„° íŒŒë¼ë¯¸í„° ì—…ë°ì´íŠ¸
         animator.SetBool("isMoving", isMoving);
         animator.SetBool("isRunning", isRunning);
-        animator.SetBool("isTurning", isTurning); // Ãß°¡µÈ isTurning ÆÄ¶ó¹ÌÅÍ
+        animator.SetBool("isTurning", isTurning); // ì¶”ê°€ëœ isTurning íŒŒë¼ë¯¸í„°
 
         Vector2 animInput = TransformToLocalInput(inputDir);
         animator.SetFloat("moveX", animInput.x);
@@ -106,21 +106,21 @@ public class PlayerMovement : MonoBehaviour
         this.isMoving = isMoving;
     }
 
-    
+
     void HandleJump()
     {
-        // Raycast¸¦ »ç¿ëÇÏ¿© ¹Ù´Ú¿¡ ´ê¾Ò´ÂÁö È®ÀÎ
+        // Raycastë¥¼ ì‚¬ìš©í•˜ì—¬ ë°”ë‹¥ì— ë‹¿ì•˜ëŠ”ì§€ í™•ì¸
         isGrounded = Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance + 0.1f);
 
         if (isGrounded)
         {
-            // ¶¥¿¡ ´êÀ¸¸é Á¡ÇÁ È½¼ö¸¦ ÃÊ±âÈ­
+            // ì°©ì§€ ì‹œì ì— ì í”„ íšŸìˆ˜ë¥¼ ì´ˆê¸°í™”
             jumpCount = 0;
             isJumping = false;
             animator.SetBool("isJumping", false);
 
             animator.SetInteger("jumpCount", jumpCount);
-            // CharacterController°¡ ¹Ù´Ú¿¡ Àß ºÙµµ·Ï yÃà ¼Óµµ Á¶Á¤
+            // CharacterControllerê°€ ë°”ë‹¥ì— ì˜ ë¶™ë„ë¡ yì¶• ì†ë„ ë³´ì •
             if (velocity.y < 0)
             {
                 velocity.y = -2f;
@@ -129,17 +129,17 @@ public class PlayerMovement : MonoBehaviour
 
         animator.SetBool("isGrounded", isGrounded);
 
-        // ½ºÆäÀÌ½º¹Ù¸¦ ´©¸£°í, ÇöÀç Á¡ÇÁ È½¼ö°¡ ÃÖ´ë Á¡ÇÁ È½¼ö ¹Ì¸¸ÀÏ ¶§
-        if (Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumps)
+        // ê³µê²© ë˜ëŠ” ë°©ì–´ ì¤‘ì¼ ë•ŒëŠ” ìƒˆë¡œìš´ ì í”„ë¥¼ ì‹œì‘í•˜ì§€ ëª»í•˜ê²Œ ë§‰ëŠ”ë‹¤
+        if (!isAttacking && !isDefending && Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumps)
         {
             velocity.y = jumpForce;
             isJumping = true;
             animator.SetBool("isJumping", true);
-            jumpCount++; // Á¡ÇÁ È½¼ö 1 Áõ°¡
+            jumpCount++; // ì í”„ íšŸìˆ˜ 1 ì¦ê°€
             animator.SetInteger("jumpCount", jumpCount);
         }
 
-        // Áß·Â Àû¿ë
+        // ì¤‘ë ¥ ì ìš©
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
@@ -153,43 +153,43 @@ public class PlayerMovement : MonoBehaviour
     {
         return isDefending;
     }
-    // °ø°İ ¹× ¹æ¾î ·ÎÁ÷À» ´ã´çÇÏ´Â »õ·Î¿î ÇÔ¼ö
+    // ê³µê²© ë° ë°©ì–´ ë¡œì§ì„ ë‹´ë‹¹í•˜ëŠ” í•¨ìˆ˜
     void HandleAttack()
     {
         if (isMoving || isDefending ) return;
-        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle")) 
-        { 
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+        {
             isAttacking = false;
         }
-        // °ø°İ ·ÎÁ÷
+        // ê³µê²© ì‹¤í–‰
         if (Input.GetButtonDown("Fire1"))
         {
             animator.SetTrigger("Attack");
             animator.SetInteger("AttackCount", AttackCount);
             AttackCount++;
             lastInputTime = Time.time;
-            isAttacking = true; // °ø°İ »óÅÂ º¯¼ö ¾÷µ¥ÀÌÆ®
+            isAttacking = true; // ê³µê²© ìƒíƒœ ì§„ì… ì—…ë°ì´íŠ¸
         }
 
-        // ÀÏÁ¤ ½Ã°£ µ¿¾È ÀÔ·ÂÀÌ ¾øÀ¸¸é ¾îÅÃ Ä«¿îÆ® ÃÊ±âÈ­
+        // ì¼ì • ì‹œê°„ ë™ì•ˆ ì…ë ¥ì´ ì—†ìœ¼ë©´ ì½¤ë³´ ì¹´ìš´íŠ¸ ì´ˆê¸°í™”
         if (Time.time - lastInputTime > resetDelay && AttackCount != 0)
         {
             Debug.Log(Time.time - lastInputTime);
             AttackCount = 0;
             lastInputTime = 0;
             animator.SetInteger("AttackCount", AttackCount);
-        }       
+        }
     }
 
     public void HandleDefense()
     {
         if (isAttacking) return;
-        // ¹æ¾î ·ÎÁ÷
+        // ë°©ì–´ ì‹¤í–‰
         isDefending = Input.GetMouseButton(1);
         animator.SetBool("isDefending", isDefending);
         // isDefending = true;
-    }    
-    // ¾Ö´Ï¸ŞÀÌ¼Ç ÀÌº¥Æ®¿¡¼­ È£ÃâÇÒ ÇÔ¼ö
+    }
+    // ì• ë‹ˆë©”ì´ì…˜ ì´ë²¤íŠ¸ì—ì„œ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜
     public void ResetAttack()
     {
         isAttacking = false;

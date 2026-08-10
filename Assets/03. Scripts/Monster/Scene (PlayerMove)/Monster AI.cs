@@ -17,12 +17,12 @@ public class MonsterAI : MonoBehaviour
     private GameObject _lockTarget;
     private Vector3 _destPos;
 
-    private enum State { Idle, Chase, Attack, Groggy } // »óÅÂ ¿òÁ÷ÀÓ
+    private enum State { Idle, Chase, Attack, Groggy } // ëª¬ìŠ¤í„° ìƒíƒœ
     private State currentState = State.Idle;
 
     private float lastAttackTime = -999f;
 
-    private float groggyTime = 2f; // ±×·Î±â Áö¼Ó ½Ã°£
+    private float groggyTime = 2f; // ê·¸ë¡œê¸° ì§€ì† ì‹œê°„
     private float checkTime = 5f;
     private bool isGroggy = false;
     private bool isWalking = false;
@@ -41,25 +41,28 @@ public class MonsterAI : MonoBehaviour
 
     void Update()
     {
-        // ÇöÀç ¾Ö´Ï¸ŞÀÌ¼Ç »óÅÂ¸¦ °¡Á®¿É´Ï´Ù.
+        // í˜„ì¬ ì• ë‹ˆë©”ì´ì…˜ ìƒíƒœë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        bool isAttackAnimPlaying = stateInfo.IsTag("Attack");
 
-        // °ø°İ ÅÂ±×°¡ ÀÖ´Â ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ Àç»ı ÁßÀÌ°Å³ª ±×·Î±â »óÅÂÀÏ ¶§
-        if (stateInfo.IsTag("Attack") || isGroggy)
+        // ê³µê²© íƒœê·¸ê°€ ìˆëŠ” ì• ë‹ˆë©”ì´ì…˜ì´ ì¬ìƒ ì¤‘ì´ê±°ë‚˜ ê·¸ë¡œê¸° ìƒíƒœì¼ ë•Œ
+        if (isAttackAnimPlaying || isGroggy)
         {
-            // NavMeshAgentÀÇ ÀÌµ¿À» ÁßÁöÇÕ´Ï´Ù.
+            // NavMeshAgentì˜ ì´ë™ì„ ë©ˆì¶”ê³ , íšŒì „ë„ ë£¨íŠ¸ëª¨ì…˜ì—ê²Œ ì™„ì „íˆ ë§¡ê¸´ë‹¤.
             agent.isStopped = true;
+            agent.updateRotation = false;
         }
-        // ±× ¿ÜÀÇ »óÈ²¿¡¼­´Â ÀÌµ¿À» Çã¿ëÇÕ´Ï´Ù.
+        // ê·¸ ì™¸ì˜ ìƒí™©ì—ì„œëŠ” ì´ë™ì„ ì¬ê°œí•©ë‹ˆë‹¤.
         else
         {
             agent.isStopped = false;
+            agent.updateRotation = true;
         }
 
-        // ±×·Î±â »óÅÂÀÏ ¶§´Â ´Ù¸¥ Çàµ¿ ·ÎÁ÷À» ½ÇÇàÇÏÁö ¾Ê°í ÇÔ¼ö¸¦ Á¾·áÇÕ´Ï´Ù.
+        // ê·¸ë¡œê¸° ìƒíƒœì¼ ë•ŒëŠ” ë‹¤ë¥¸ í–‰ë™ ë¡œì§ì„ ì‹¤í–‰í•˜ì§€ ì•Šê³  í•¨ìˆ˜ë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤.
         if (isGroggy) return;
 
-        
+
 
     float distance = Vector3.Distance(transform.position, player.position);
 
@@ -72,14 +75,14 @@ public class MonsterAI : MonoBehaviour
                 HandleChase(distance);
                 break;
             case State.Attack:
-                HandleAttack(distance);
+                HandleAttack(distance, isAttackAnimPlaying);
                 break;
         }
     }
 
     void HandleIdle(float distance)
     {
-        Debug.Log("Ãâ·Â");
+        Debug.Log("ëŒ€ê¸°");
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player == null) { return; }
 
@@ -93,8 +96,8 @@ public class MonsterAI : MonoBehaviour
     void HandleChase(float distance)
     {
         const float Stopping_Chase_Range = 5f;
-      
-        // ÇÃ·¹ÀÌ¾î°¡ Á¸ÀçÇÏ¸é ÃßÀû ·ÎÁ÷ ½ÇÇà
+
+        // í”Œë ˆì´ì–´ê°€ ì¡´ì¬í•˜ë©´ ì¶”ê²© ë¡œì§ ì‹¤í–‰
         if (player != null)
         {
             if (distance <= detectionRange)
@@ -102,7 +105,7 @@ public class MonsterAI : MonoBehaviour
                 isWalking = true;
                 animator.SetBool("isWalking", true);
             }
-            else if (distance > detectionRange + 2f) 
+            else if (distance > detectionRange + 2f)
             {
                 isWalking = false;
                 animator.SetBool("isWalking", false);
@@ -110,19 +113,19 @@ public class MonsterAI : MonoBehaviour
                 return;
             }
 
-            // ÃßÀû ÁßÀÌ¸é ÇÃ·¹ÀÌ¾î ¹İ°æ 5f ±îÁö ÀÌµ¿
+            // ê±·ëŠ” ì¤‘ì´ë©´ í”Œë ˆì´ì–´ ë°˜ê²½ 5f ê¹Œì§€ ì´ë™
             if (isWalking)
             {
                 Vector3 dirToPlayer = (player.position - transform.position).normalized;
 
-                // ÇÃ·¹ÀÌ¾î¿¡¼­ 5f µÚÂÊ À§Ä¡¸¦ ¸ñÀûÁö·Î ¼³Á¤
+                // í”Œë ˆì´ì–´ë¡œë¶€í„° 5f ë§Œí¼ ë–¨ì–´ì§„ ìœ„ì¹˜ë¥¼ ëª©ì ì§€ë¡œ ì„¤ì •
                 Vector3 targetPos = player.position - dirToPlayer * Stopping_Chase_Range;
 
                 agent.isStopped = false;
                 agent.SetDestination(targetPos);
-            }    
+            }
 
-            // ¸ó½ºÅÍ°¡ ÇÃ·¹ÀÌ¾î¸¦ ÇâÇØ ºÎµå·´°Ô È¸Àü
+            // ëª¬ìŠ¤í„°ê°€ í”Œë ˆì´ì–´ë¥¼ í–¥í•´ ë¶€ë“œëŸ½ê²Œ íšŒì „
             Vector3 dir = (player.position - transform.position).normalized;
             dir.y = 0f;
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
@@ -131,36 +134,40 @@ public class MonsterAI : MonoBehaviour
             {
                 currentState = State.Idle;
             }
-        }       
+        }
     }
 
-    void HandleAttack(float distance)
+    void HandleAttack(float distance, bool isAttackAnimPlaying)
     {
-        Debug.Log("ÀÔ·Â");
-        if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
-        {          
-            isWalking = false;
-        }
-        
-        // °ø°İ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ Àç»ı ÁßÀÌ¶ó¸é ´Ù¸¥ »óÅÂ·Î ÀüÈ¯ÇÏÁö ¾Ê°í Á¾·á
-        if (isAttacking)
+        Debug.Log("ê³µê²©");
+
+        // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ì´ ì¬ìƒ ì¤‘ì´ë©´ íšŒì „/ìƒíƒœ ì „í™˜ì„ ì „í˜€ ê±´ë“œë¦¬ì§€ ì•ŠëŠ”ë‹¤.
+        // (ë£¨íŠ¸ëª¨ì…˜ì´ íšŒì „ì„ ì „ë‹´í•˜ë¯€ë¡œ ì½”ë“œì—ì„œ transformì„ ê±´ë“œë¦¬ë©´ ì¶©ëŒí•œë‹¤)
+        if (isAttackAnimPlaying)
         {
-            // °ø°İ Áß¿¡´Â ÇÃ·¹ÀÌ¾î¸¦ ÇâÇÏµµ·Ï °è¼Ó È¸Àü
-            transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
+            isWalking = false;
             return;
         }
 
-        // °ø°İ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ³¡³­ ÈÄÀÇ ·ÎÁ÷
+        // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ì´ ëë‚œ ë’¤ì—ë§Œ ë‹¤ìŒ í–‰ë™ì„ ê²°ì •
         if (distance > attackRange)
         {
-            // °ø°İ ¹üÀ§ ¹ÛÀ¸·Î ¹ş¾î³ª¸é ÃßÀû »óÅÂ·Î ÀüÈ¯
+            // ì‚¬ê±°ë¦¬ ë°–ìœ¼ë¡œ ë²—ì–´ë‚˜ë©´ ì¶”ê²© ìƒíƒœë¡œ ì „í™˜
             currentState = State.Chase;
         }
         else
         {
-            // °ø°İ ¹üÀ§ ³»¿¡ ÀÖÀ¸¸é Äğ´Ù¿î È®ÀÎ ÈÄ ´Ù½Ã °ø°İ
+            // ì‚¬ê±°ë¦¬ ì•ˆì— ìˆìœ¼ë©´ ì¿¨ë‹¤ìš´ í™•ì¸ í›„ ë‹¤ì‹œ ê³µê²©
             if (Time.time - lastAttackTime >= attackCooldown)
             {
+                // [í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ ì„ì‹œ ì£¼ì„ ì²˜ë¦¬] ìŠ¤ìœ™ì„ ì‹œì‘í•˜ê¸° ì „, í”Œë ˆì´ì–´ ë°©í–¥ìœ¼ë¡œ í•œ ë²ˆë§Œ ì¦‰ì‹œ íšŒì „ì‹œì¼œ ë†“ëŠ” ê¸°ëŠ¥
+                //Vector3 dir = (player.position - transform.position).normalized;
+                //dir.y = 0f;
+                //if (dir.sqrMagnitude > 0.0001f)
+                //{
+                //    transform.rotation = Quaternion.LookRotation(dir);
+                //}
+
                 animator.SetTrigger("attack");
                 lastAttackTime = Time.time;
             }
@@ -176,8 +183,8 @@ public class MonsterAI : MonoBehaviour
 
         isGroggy = true;
         currentState = State.Groggy;
-        agent.ResetPath(); // ÀÌµ¿ ÁßÁö
-        animator.SetTrigger("groggy"); // groggy ¾Ö´Ï¸ŞÀÌ¼Ç Æ®¸®°Å
+        agent.ResetPath(); // ì´ë™ ì •ì§€
+        animator.SetTrigger("groggy"); // groggy ì• ë‹ˆë©”ì´ì…˜ íŠ¸ë¦¬ê±°
         StartCoroutine(GroggyRecover());
     }
 
@@ -185,14 +192,14 @@ public class MonsterAI : MonoBehaviour
     {
         yield return new WaitForSeconds(groggyTime);
         isGroggy = false;
-        currentState = State.Idle; // ´Ù½Ã idle »óÅÂ·Î º¹±Í
+        currentState = State.Idle; // ë‹¤ì‹œ idle ìƒíƒœë¡œ ë³µê·€
     }
 
-    private System.Collections.IEnumerator Checking() 
-    { 
-        yield return new WaitForSeconds(checkTime); 
-        animator.SetTrigger("Check"); 
-        agent.isStopped = true; 
-        currentState = State.Attack; 
+    private System.Collections.IEnumerator Checking()
+    {
+        yield return new WaitForSeconds(checkTime);
+        animator.SetTrigger("Check");
+        agent.isStopped = true;
+        currentState = State.Attack;
     }
 }

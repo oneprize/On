@@ -9,7 +9,7 @@ public class EnemyWeapon : MonoBehaviour
     public bool parriedThisSwing { get; private set; } = false;
     public bool isStrongAttack = false;
 
-    // »õ·Î¿î ÇÔ¼ö Ãß°¡: MonsterAttackEvents¿¡¼­ È£ÃâÇÏ¿© °ø°Ý À¯ÇüÀ» ¼³Á¤ÇÕ´Ï´Ù.
+    // ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½Ô¼ï¿½ ï¿½ß°ï¿½: MonsterAttackEventsï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     public void SetAttackType(bool isStrong)
     {
         this.isStrongAttack = isStrong;
@@ -19,11 +19,17 @@ public class EnemyWeapon : MonoBehaviour
     {
         damageWindow = true;
         parriedThisSwing = false;
+
+        if (monsterAI != null)
+            monsterAI.isAttacking = true;
     }
 
     public void EndAttackWindow()
     {
         damageWindow = false;
+
+        if (monsterAI != null)
+            monsterAI.isAttacking = false;
     }
 
     public void OnParried()

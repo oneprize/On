@@ -18,32 +18,32 @@ public class AITest : MonoBehaviour
     [SerializeField] private Animator animator;
 
     [Header("Ranges")]
-    [SerializeField] private float detectionRadius = 15f; // ÇÃ·¹ÀÌ¾î ¹ß°ß ¹üÀ§
-    [SerializeField] private float chaseStopDistance = 5f; // ¿©±â±îÁö ÃßÀû ÈÄ Idle
-    [SerializeField] private float attackRange = 2f;       // °ø°İ »ç°Å¸®
+    [SerializeField] private float detectionRadius = 15f; // í”Œë ˆì´ì–´ ë°œê²¬ ë²”ìœ„
+    [SerializeField] private float chaseStopDistance = 5f; // ì ‘ê·¼í•˜ë‹¤ ë©ˆì¶œ ë•Œ Idle
+    [SerializeField] private float attackRange = 2f;       // ê³µê²© ì‚¬ê±°ë¦¬
 
     [Header("Timings")]
-    [SerializeField] private float idleWaitSeconds = 5f;   // Idle ´ë±â ½Ã°£
-    [SerializeField] private float attackDuration = 1.2f;  // ¾Ö´Ï ÀÌº¥Æ®¸¦ ¾È ¾µ ¶§ °ø°İ ½Ã°£
+    [SerializeField] private float idleWaitSeconds = 5f;   // Idle ëŒ€ê¸° ì‹œê°„
+    [SerializeField] private float attackDuration = 1.2f;  // ì• ë‹ˆ ì´ë²¤íŠ¸ê°€ ì•ˆ ì˜¬ ë•Œ ëŒ€ë¹„ ì‹œê°„
 
     [Header("Options")]
-    [SerializeField] private LayerMask playerMask = ~0;    // ÇÊ¿ä ½Ã ½Ã¾ß Ã¼Å© ¿ë
+    [SerializeField] private LayerMask playerMask = ~0;    // í•„ìš” ì‹œ ì‹œì•¼ ì²´í¬ ìš©
     [SerializeField] private bool requireLineOfSight = false;
     [SerializeField] private float losCheckHeightOffset = 1.6f;
 
-    [SerializeField] private float chaseRingTolerance = 0.2f; // 5f µµÂø ÆÇÁ¤ Çã¿ë ¿ÀÂ÷
-    [SerializeField] private bool forceChaseRingOnReturn = true; // Attack ÈÄ 5f ¸ÂÃß±â
-    [SerializeField] private float navSampleMaxDist = 1.5f; // NavMesh º¸Á¤ ÃÖ´ë °Å¸®
+    [SerializeField] private float chaseRingTolerance = 0.2f; // 5f ë§ì— ë„ë‹¬ í—ˆìš© ì˜¤ì°¨
+    [SerializeField] private bool forceChaseRingOnReturn = true; // Attack í›„ 5f ì¬ê³ ì •
+    [SerializeField] private float navSampleMaxDist = 1.5f; // NavMesh ìƒ˜í”Œ ìµœëŒ€ ê±°ë¦¬
     private bool _needRepositionToChaseRing = false;
     private Vector3 _chaseRingTarget;
 
-    // Animator ÆÄ¶ó¹ÌÅÍ¸í(ÇÁ·ÎÁ§Æ®¿¡ ¸Â°Ô º¯°æ °¡´É)
+    // ì• ë‹ˆë©”ì´í„° íŒŒë¼ë¯¸í„°ëª…(í”„ë¡œì íŠ¸ì— ë§ê²Œ ìˆ˜ì • ê°€ëŠ¥)
     private static readonly int AnimSpeed = Animator.StringToHash("Speed");
     private static readonly int AnimAttack = Animator.StringToHash("Attack");
 
     public State CurrentState { get; private set; } = State.Detect;
 
-    // ³»ºÎ »óÅÂ
+    // ë‚´ë¶€ ìƒíƒœ
     private float _idleTimer;
     private bool _isAttacking;
     private bool _attackFinishedByEvent;
@@ -79,7 +79,7 @@ public class AITest : MonoBehaviour
                 break;
 
             case State.Attack:
-                // °ø°İ »óÅÂ¿¡¼­´Â ÄÚ·çÆ¾ÀÌ ÁÖ¿ä ·ÎÁ÷À» Ã³¸®ÇÏ¹Ç·Î ¿©±â¼­´Â ÀÌµ¿ ¾Ö´Ï¸ŞÀÌ¼Ç¸¸ ¾÷µ¥ÀÌÆ®
+                // ê³µê²© ìƒíƒœì—ì„œëŠ” ì½”ë£¨í‹´ì´ ì£¼ìš” ë¡œì§ì„ ì²˜ë¦¬í•˜ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” ì´ë™ ì• ë‹ˆë©”ì´ì…˜ë§Œ ì—…ë°ì´íŠ¸
                 UpdateAnimatorSpeed();
                 break;
         }
@@ -97,19 +97,19 @@ public class AITest : MonoBehaviour
 
     private void TickChase()
     {
-        // ÇÃ·¹ÀÌ¾î¸¦ ÀÒÀ¸¸é Detect·Î
+        // í”Œë ˆì´ì–´ë¥¼ ë†“ì¹˜ë©´ Detectë¡œ
         if (!IsPlayerDetected())
         {
             ChangeState(State.Detect);
             return;
         }
 
-        // 1) Chase ÀçÁøÀÔ º¸Á¤: ¸ÕÀú 5f ¸µÀ¸·Î Å»Ãâ
+        // 1) Chase ì§„ì…ì‹œ ì¬ì •ë ¬: ë§ì„ 5f ë°–ìœ¼ë¡œ íƒˆì¶œ
         if (_needRepositionToChaseRing)
         {
             agent.isStopped = false;
 
-            // ¸ñÇ¥ ÁöÁ¡±îÁö °ÅÀÇ µµ´ŞÇß´ÂÁö È®ÀÎ
+            // ëª©í‘œ ë§ê¹Œì§€ ì‹¤ì œ ë„ë‹¬í–ˆëŠ”ì§€ í™•ì¸
             float ringDist = Vector3.Distance(FlatPos(transform.position), FlatPos(_chaseRingTarget));
             if (ringDist <= chaseRingTolerance)
             {
@@ -117,14 +117,14 @@ public class AITest : MonoBehaviour
                 agent.ResetPath();
                 agent.isStopped = true;
                 UpdateAnimatorSpeed(0f);
-                // ¸µ¿¡ ¼¹À¸´Ï Idle·Î ÀüÈ¯
+                // ë§ì— ë„ë‹¬í•˜ë©´ Idleë¡œ ì „í™˜
                 ChangeState(State.Idle);
                 return;
             }
 
-            // ¾ÆÁ÷ ÀÌµ¿ ÁßÀÌ¸é °è¼Ó ÁøÇà
+            // ì•„ì§ ì´ë™ ì¤‘ì´ë©´ ê³„ì† ìœ ì§€
             UpdateAnimatorSpeed();
-            // È¤½Ã °æ·Î°¡ ²÷°å´Ù¸é ¸ñÇ¥¸¦ Àç°è»ê
+            // í˜¹ì‹œ ê²½ë¡œê°€ ëŠê²¼ë‹¤ë©´ ëª©í‘œë¥¼ ì¬ì„¤ì •
             if (!agent.hasPath || agent.pathStatus == NavMeshPathStatus.PathInvalid)
             {
                 _chaseRingTarget = ComputeChaseRingPoint();
@@ -133,14 +133,14 @@ public class AITest : MonoBehaviour
             return;
         }
 
-        // 2) ÀÏ¹İ ÃßÀû ´Ü°è
+        // 2) ì¼ë°˜ ì¶”ê²© ë‹¨ê³„
         agent.isStopped = false;
         agent.SetDestination(player.position);
         UpdateAnimatorSpeed();
 
         float dist = DistanceToPlayerXZ();
 
-        // 5f¿¡ µµ´ŞÇÏ¸é Idle·Î
+        // 5fì— ë„ë‹¬í•˜ë©´ Idleë¡œ
         if (dist <= chaseStopDistance)
         {
             ChangeState(State.Idle);
@@ -149,8 +149,7 @@ public class AITest : MonoBehaviour
 
     private void TickIdle()
     {
-        Debug.Log("Idle");
-        // Á¤Áö ¹× ´ë±â
+        // ì œìë¦¬ ëŒ€ê¸°
         agent.isStopped = true;
         agent.ResetPath();
         UpdateAnimatorSpeed(0f);
@@ -174,6 +173,8 @@ public class AITest : MonoBehaviour
             case State.Attack:
                 _isAttacking = false;
                 _attackFinishedByEvent = false;
+                // [í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ ì„ì‹œ ì£¼ì„ ì²˜ë¦¬] ê³µê²©ì´ ëë‚¬ìœ¼ë‹ˆ NavMeshAgentì˜ ìë™ íšŒì „ì„ ë‹¤ì‹œ ì¼ ë‹¤
+                //if (agent) agent.updateRotation = true;
                 break;
         }
 
@@ -191,21 +192,21 @@ public class AITest : MonoBehaviour
                 _idleTimer = 0f;
                 agent.isStopped = false;
 
-                // Attack¿¡¼­ µ¹¾Æ¿Â Á÷ÈÄ, 5fº¸´Ù °¡±î¿ì¸é ¸ÕÀú ¸µÀ¸·Î ÀÌµ¿
-                if (forceChaseRingOnReturn)
-                {
-                    float dist = DistanceToPlayerXZ();
-                    if (dist < chaseStopDistance - chaseRingTolerance)
-                    {
-                        _needRepositionToChaseRing = true;
-                        _chaseRingTarget = ComputeChaseRingPoint();
-                        MoveAgentTo(_chaseRingTarget);
-                    }
-                    else
-                    {
-                        _needRepositionToChaseRing = false;
-                    }
-                }
+                // [í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ ì„ì‹œ ì£¼ì„ ì²˜ë¦¬] ê³µê²© í›„ 5fë³´ë‹¤ ê°€ê¹Œìš°ë©´ ì›ë˜ ë§(ê±°ë¦¬)ê¹Œì§€ ë’¤ë¡œ ë¬¼ëŸ¬ë‚˜ëŠ” ê¸°ëŠ¥
+                //if (forceChaseRingOnReturn)
+                //{
+                //    float dist = DistanceToPlayerXZ();
+                //    if (dist < chaseStopDistance - chaseRingTolerance)
+                //    {
+                //        _needRepositionToChaseRing = true;
+                //        _chaseRingTarget = ComputeChaseRingPoint();
+                //        MoveAgentTo(_chaseRingTarget);
+                //    }
+                //    else
+                //    {
+                //        _needRepositionToChaseRing = false;
+                //    }
+                //}
                 break;
 
             case State.Idle:
@@ -225,7 +226,7 @@ public class AITest : MonoBehaviour
     {
         _isAttacking = true;
 
-        // 1) °ø°İ »ç°Å¸®±îÁö Á¢±Ù
+        // 1) ì‚¬ê±°ë¦¬ ì§„ì…ê¹Œì§€ ì¶”ì 
         while (true)
         {
             float dist = DistanceToPlayerXZ();
@@ -235,7 +236,7 @@ public class AITest : MonoBehaviour
             agent.SetDestination(player.position);
             UpdateAnimatorSpeed();
 
-            // ÇÃ·¹ÀÌ¾î¸¦ ÀÒÀ¸¸é Detect·Î
+            // í”Œë ˆì´ì–´ë¥¼ ë†“ì¹˜ë©´ Detectë¡œ
             if (!IsPlayerDetected())
             {
                 ChangeState(State.Detect);
@@ -245,17 +246,20 @@ public class AITest : MonoBehaviour
             yield return null;
         }
 
-        // 2) °ø°İ ¼öÇà
+        // 2) ê³µê²© ì‹œì‘
         agent.isStopped = true;
+        agent.ResetPath();
+        // [í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ ì„ì‹œ ì£¼ì„ ì²˜ë¦¬] ë£¨íŠ¸ëª¨ì…˜ì´ íšŒì „ì„ ì „ë‹´í•˜ë„ë¡ NavMeshAgentì˜ ìë™ íšŒì „ì„ ë„ëŠ” ê¸°ëŠ¥
+        //agent.updateRotation = false;
         UpdateAnimatorSpeed(0f);
 
-        // ÇÃ·¹ÀÌ¾î¸¦ ¹Ù¶óº¸°Ô
+        // í”Œë ˆì´ì–´ë¥¼ ë°”ë¼ë³´ê²Œ íšŒì „ì‹œí‚¤ëŠ” ê¸°ëŠ¥
         FaceTarget(player.position);
 
-        // ¾Ö´Ï¸ŞÀÌ¼Ç Æ®¸®°Å
+        // ì• ë‹ˆë©”ì´ì…˜ íŠ¸ë¦¬ê±°
         if (animator) animator.SetTrigger(AnimAttack);
 
-        // ¾Ö´Ï¸ŞÀÌ¼Ç ÀÌº¥Æ®¸¦ ¾µ °æ¿ì: OnAttackAnimationFinished() È£ÃâÀ» ±â´Ù¸²
+        // ì• ë‹ˆë©”ì´ì…˜ ì´ë²¤íŠ¸ê°€ ì˜¬ ë•Œê¹Œì§€ ëŒ€ê¸°: OnAttackAnimationFinished() í˜¸ì¶œì„ ê¸°ë‹¤ë¦¼
         float elapsed = 0f;
         while (!_attackFinishedByEvent && elapsed < attackDuration)
         {
@@ -263,7 +267,10 @@ public class AITest : MonoBehaviour
             yield return null;
         }
 
-        // 3) °ø°İ Á¾·á ¡æ ´Ù½Ã Chase·Î
+        // [í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ ì„ì‹œ ì£¼ì„ ì²˜ë¦¬] NavMeshAgent ìë™ íšŒì „ ë³µêµ¬
+        //if (agent) agent.updateRotation = true;
+
+        // 3) ê³µê²© ì¢…ë£Œ í›„ ë‹¤ì‹œ Chaseë¡œ
         _isAttacking = false;
         _attackFinishedByEvent = false;
         ChangeState(State.Chase);
@@ -280,7 +287,7 @@ public class AITest : MonoBehaviour
 
         if (!requireLineOfSight) return true;
 
-        // °£´ÜÇÑ LOS(½Ã¾ß) Ã¼Å©
+        // ê°„ë‹¨í•œ LOS(ì‹œì•¼) ì²´í¬
         Vector3 origin = transform.position + Vector3.up * losCheckHeightOffset;
         Vector3 target = player.position + Vector3.up * losCheckHeightOffset;
         Vector3 dir = (target - origin).normalized;
@@ -293,23 +300,23 @@ public class AITest : MonoBehaviour
         return false;
     }
 
-    // --- º¸Á¶ ÇÔ¼ö Ãß°¡ ---
+    // --- ë³´ì¡° í•¨ìˆ˜ ì¶”ê°€ ---
     private Vector3 ComputeChaseRingPoint()
     {
-        // ÇÃ·¹ÀÌ¾î ¡æ ¸ó½ºÅÍ ¹æÇâÀ¸·Î 5f ÁöÁ¡
+        // í”Œë ˆì´ì–´ ê¸°ì¤€ ë§ ë°©í–¥ìœ¼ë¡œ 5f ì§€ì 
         Vector3 p = FlatPos(player.position);
         Vector3 m = FlatPos(transform.position);
         Vector3 dir = (m - p);
         if (dir.sqrMagnitude < 0.0001f)
-            dir = transform.forward; // °°Àº À§Ä¡ÀÏ ¶§ ÀÓ½Ã ¹æÇâ
+            dir = transform.forward; // ê°™ì€ ìœ„ì¹˜ì¼ ë•Œ ì„ì‹œ ë°©í–¥
 
         Vector3 raw = p + dir.normalized * chaseStopDistance;
 
-        // NavMesh º¸Á¤
+        // NavMesh ë³´ì •
         if (NavMesh.SamplePosition(raw, out NavMeshHit hit, navSampleMaxDist, NavMesh.AllAreas))
             return hit.position;
 
-        // Á÷¼± º¸Á¤ ½ÇÆĞ ½Ã, ¾à°£ °¢µµ¸¦ µ¹·Á¼­ Å½»ö
+        // ë³´ì • ì‹¤íŒ¨ ì‹œ, ì•½ê°„ ê°ë„ë¥¼ ëŒë ¤ì„œ íƒìƒ‰
         for (int i = 1; i <= 6; i++)
         {
             float angle = 15f * i;
@@ -322,7 +329,7 @@ public class AITest : MonoBehaviour
                 return hit.position;
         }
 
-        // Á¤¸» ¾È µÇ¸é ÇöÀç À§Ä¡ ¹İÈ¯(¾ÈÀüÀåÄ¡)
+        // ì „ë¶€ ë‹¤ ì‹¤íŒ¨í•˜ë©´ í˜„ì¬ ìœ„ì¹˜ ë°˜í™˜(ì•ˆì „ì¥ì¹˜)
         return transform.position;
     }
 
@@ -354,14 +361,13 @@ public class AITest : MonoBehaviour
         dir.y = 0f;
         if (dir.sqrMagnitude > 0.001f)
         {
-            Quaternion look = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Slerp(transform.rotation, look, 0.3f);
+            // í—ˆê³µì— ìŠ¤ìœ™ì´ ë‚˜ê°€ì§€ ì•Šë„ë¡, ê³µê²© ì‹œì‘ ì‹œì ì— í”Œë ˆì´ì–´ë¥¼ ì •í™•íˆ í•œ ë²ˆì— ì¡°ì¤€í•œë‹¤.
+            transform.rotation = Quaternion.LookRotation(dir);
         }
     }
 
     private void UpdateAnimatorSpeed()
     {
-        Debug.Log("Attack");
         if (!animator || agent == null) return;
         float speed = agent.velocity.magnitude;
         animator.SetFloat(AnimSpeed, speed);
@@ -377,11 +383,21 @@ public class AITest : MonoBehaviour
 
     #region Animation Events
 
-    // °ø°İ ¾Ö´Ï¸ŞÀÌ¼Ç ¸»¹Ì¿¡ ÀÌº¥Æ®·Î È£ÃâÇÏ¸é, °ø°İ Á¾·á¸¦ Áï½Ã ¹İ¿µ
-    // ¾Ö´Ï¸ŞÀÌ¼Ç Å¬¸³¿¡¼­ ÀÌ ÇÔ¼ö¸¦ ÀÌº¥Æ®·Î ¿¬°áÇÏ¼¼¿ä.
+    // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ ëìª½ì— ì´ë²¤íŠ¸ë¡œ í˜¸ì¶œí•˜ë©´, ì¡°ê¸° ì¢…ë£Œë¥¼ ì¦‰ì‹œ ë°˜ì˜
+    // ì• ë‹ˆë©”ì´ì…˜ í´ë¦½ì— ì´ í•¨ìˆ˜ë¥¼ ì´ë²¤íŠ¸ë¡œ ì—°ê²°í•˜ì„¸ìš”.
     public void OnAttackAnimationFinished()
     {
         _attackFinishedByEvent = true;
+    }
+
+    // ê° ì½¤ë³´(Combo1/2/3)ì˜ BeginAttackWindow ì´ë²¤íŠ¸ì—ì„œ í˜¸ì¶œë¨ - ì½¤ë³´ê°€ ì´ì–´ì§€ëŠ” ë™ì•ˆ
+    // í”Œë ˆì´ì–´ê°€ ì›€ì§ì—¬ë„ ë§¤ íƒ€ê²© ì‹œì‘ ì‹œì ë§ˆë‹¤ ë‹¤ì‹œ ì¡°ì¤€í•˜ë„ë¡ í•œë‹¤.
+    public void BeginAttackWindow()
+    {
+        if (player != null)
+        {
+            FaceTarget(player.position);
+        }
     }
 
     #endregion
@@ -389,7 +405,7 @@ public class AITest : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        // °ËÃâ/ÃßÀû/°ø°İ ¹üÀ§ Ç¥½Ã
+        // ê°ì§€/ì •ì§€/ê³µê²© ë²”ìœ„ í‘œì‹œ
         Gizmos.color = new Color(0.1f, 0.7f, 1f, 0.35f);
         Gizmos.DrawWireSphere(transform.position, detectionRadius);
 

@@ -6,37 +6,41 @@ public class ParryManager : MonoBehaviour
     public static ParryManager Instance;
     public PlayerMovement playerMovement;
 
-    [Header("ÆĞ¸µ Ã¢ ±âº»°ª(ÃÊ)")]
+    [Header("íŒ¨ë§ ì°½ ê¸°ë³¸ê°’(ì´ˆ)")]
     public float defaultParryWindow = 0.4f;
 
-    [Header("½½·Î¿ì ¸ğ¼Ç")]
+    [Header("ìŠ¬ë¡œìš°ëª¨ì…˜ ì—°ì¶œ")]
     public bool useSlowMotion = true;
     public float slowMotionScale = 0.2f;
     public float slowMotionDuration = 0.25f;
 
-    [Header("ÇÃ·¹ÀÌ¾î ´Ù¿î ¿¬µ¿")]
+    [Header("í”Œë ˆì´ì–´ ë‹¤ìš´ ë¦¬ì‹œë²„")]
     public PlayerHitReceiver playerHitReceiver;
 
-    [Header("ÆĞ¸µ ¼º°ø i-frame(ÃÊ)")]
+    [Header("íŒ¨ë§ ì„±ê³µ i-frame(ì´ˆ)")]
     public float parrySuccessIFrame = 0.12f;
 
-    // °ø°İ À¯Çü¿¡ µû¸¥ ´Ù¿î È¿°ú
-    [SerializeField] private bool isStrongAttack = false; // °­ÇÑ °ø°İ ¿©ºÎ¸¦ ÀúÀåÇÒ º¯¼ö
+    [Header("íŒ¨ë§ ìœ íš¨ ë²”ìœ„ (ëª¬ìŠ¤í„° ì •ë©´ ê¸°ì¤€)")]
+    public float parryRange = 3f;
+    public float parryHalfAngle = 70f;
 
-    // ÆĞ¸µ Å¸ÀÌ¹Ö °ü¸®
+    // ê°•ê³µê²© ì—¬ë¶€ì— ë”°ë¥¸ ë‹¤ìš´ íš¨ê³¼
+    [SerializeField] private bool isStrongAttack = false; // ê°•í•œ ê³µê²© ì—¬ë¶€ë¥¼ ì €ì¥í•  ë³€ìˆ˜
+
+    // íŒ¨ë§ íƒ€ì´ë° ê´€ë¦¬
     public bool isParryWindow { get; private set; }
     private float parryStartUnscaled;
     private float activeWindowDuration;
 
-    // ÆĞ¸µ ´ë»ó °ü¸®
+    // íŒ¨ë§ ëŒ€ìƒ ê´€ë¦¬
     private GameObject targetEnemy;
     private EnemyWeapon targetWeapon;
 
-    // ÆĞ¸µ ¼º°ø ¹× ¹«Àû »óÅÂ °ü¸®
+    // íŒ¨ë§ ì„±ê³µ í›„ ë¬´ì  ê´€ë ¨ ë³€ìˆ˜
     private float invulnUntilUnscaled = 0f;
     private bool parrySucceeded = false;
 
-    // ÀÌÆåÆ®/»ç¿îµå µî
+    // ì´í™íŠ¸/ì—°ì¶œ ë“±
     public GameObject parryVFXPrefab;
     public Transform vfxSpawnPoint;
 
@@ -45,7 +49,7 @@ public class ParryManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            // DontDestroyOnLoad(gameObject); // ÇÊ¿äÇÑ °æ¿ì ÁÖ¼® ÇØÁ¦
+            // DontDestroyOnLoad(gameObject); // í•„ìš”í•œ ê²½ìš° ì£¼ì„ í•´ì œ
         }
         else
         {
@@ -55,33 +59,33 @@ public class ParryManager : MonoBehaviour
 
     void Update()
     {
-        // ÆĞ¸µ Å¸ÀÌ¹Ö Áß ÇÃ·¹ÀÌ¾î ÀÔ·Â °¨Áö
+        // íŒ¨ë§ íƒ€ì´ë° ì¤‘ í”Œë ˆì´ì–´ ì…ë ¥ ê°ì§€
         if (isParryWindow)
         {
-            // (Ãß°¡) ¹æ¾î ÁßÀÌ¶ó¸é ¹«Á¶°Ç ÆĞ¸µ ¼º°ø
+            // (ì°¸ê³ ) ë°©ì–´ ì¤‘ì´ë¼ë©´ ìš°í´ë¦­ íŒ¨ë§ íŒì •
             //if (playerMovement != null && playerMovement.IsDefending())
             if (Input.GetMouseButton(1))
             {
                 float elapsed = Time.unscaledTime - parryStartUnscaled;
-                if (elapsed <= activeWindowDuration)
+                if (elapsed <= activeWindowDuration && IsPlayerInParryRange())
                 {
-                    Debug.Log("¹æ¾î ÆĞ¸®");
+                    Debug.Log("ìš°í´ë¦­ íŒ¨ë§");
                     OnParrySuccess();
-                    return; // ¼º°øÇßÀ¸¹Ç·Î Ãß°¡ ·ÎÁ÷ ½ÇÇàÇÏÁö ¾Ê°í Á¾·á
+                    return; // ì„±ê³µí–ˆìœ¼ë¯€ë¡œ ì¶”ê°€ ì…ë ¥ ì²˜ë¦¬í•˜ì§€ ì•Šê³  ì¢…ë£Œ
                 }
-                    
+
             }
-                        // Å¬¸¯Çü ¼º°ø ÆÇÁ¤
+            // í´ë¦­ìœ¼ë¡œ íŒ¨ë§ íŒì •
             if (Input.GetButtonDown("Fire1"))
             {
                 float elapsed = Time.unscaledTime - parryStartUnscaled;
-                if (elapsed <= activeWindowDuration)
+                if (elapsed <= activeWindowDuration && IsPlayerInParryRange())
                 {
-                    Debug.Log("°ø°İ ÆĞ¸®");
+                    Debug.Log("ì¢Œí´ë¦­ íŒ¨ë§");
                     OnParrySuccess();
                 }
             }
-            // ÆĞ¸µ Å¸ÀÌ¹Ö Ã¢ÀÌ ³¡³ª¸é Ã¢ ´İ±â
+            // íŒ¨ë§ íƒ€ì´ë° ì°½ì´ ëë‚˜ë©´ ì°½ ë‹«ê¸°
             if (Time.unscaledTime - parryStartUnscaled > activeWindowDuration)
             {
                 CloseParryWindow();
@@ -89,32 +93,39 @@ public class ParryManager : MonoBehaviour
         }
     }
 
+    // ëª¬ìŠ¤í„° ì •ë©´ ìœ íš¨ ë²”ìœ„ ì•ˆì— í”Œë ˆì´ì–´ê°€ ìˆëŠ”ì§€ í™•ì¸ (ê±°ë¦¬ + ê°ë„)
+    private bool IsPlayerInParryRange()
+    {
+        if (targetEnemy == null || playerMovement == null) return false;
+        return CombatRange.IsInFrontArc(targetEnemy.transform, playerMovement.transform, parryRange, parryHalfAngle);
+    }
+
     //---------------------------------------------------------
-    // ÆĞ¸µ °ü¸® ·ÎÁ÷
+    // íŒ¨ë§ íƒ€ì´ë° ì°½ ì‹œì‘
     //---------------------------------------------------------
     public void StartParryWindow(GameObject enemy, EnemyWeapon weapon, float duration, bool isStrong)
     {
         targetEnemy = enemy;
         targetWeapon = weapon;
-        isStrongAttack = isStrong; // °­ÇÑ °ø°İ ¿©ºÎ¸¦ ÀÌ º¯¼ö¿¡ ÀúÀå
+        isStrongAttack = isStrong; // ê°•í•œ ê³µê²© ì—¬ë¶€ë¥¼ ë¯¸ë¦¬ ì €ì¥í•´ë‘ 
 
         activeWindowDuration = duration > 0f ? duration : defaultParryWindow;
         parryStartUnscaled = Time.unscaledTime;
         isParryWindow = true;
         parrySucceeded = false;
 
-        Debug.Log("ÆĞ¸µ Å¸ÀÌ¹Ö ½ÃÀÛ");
+        Debug.Log("íŒ¨ë§ íƒ€ì´ë° ì‹œì‘");
     }
 
-    // ÆĞ¸µ ¼º°ø ½Ã È£ÃâµÇ´Â ÇÔ¼ö
+    // íŒ¨ë§ ì„±ê³µ ì‹œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
     private void OnParrySuccess()
     {
-        if (parrySucceeded) return; // Áßº¹ ¹æÁö
+        if (parrySucceeded) return; // ì¤‘ë³µ ë°©ì§€
         parrySucceeded = true;
 
-        Debug.Log("ÆĞ¸µ ¼º°ø");
+        Debug.Log("íŒ¨ë§ ì„±ê³µ");
 
-        // ½½·Î¿ì ¸ğ¼Ç ¹ßµ¿
+        // ìŠ¬ë¡œìš°ëª¨ì…˜ ì—°ì¶œ ë°œë™
         if (useSlowMotion)
         {
             Time.timeScale = Mathf.Clamp(slowMotionScale, 0.01f, 1f);
@@ -123,19 +134,19 @@ public class ParryManager : MonoBehaviour
             Invoke(nameof(ResetTimeScale), slowMotionDuration);
         }
 
-        // ÀÌÆåÆ® »ı¼º
+        // ì´í™íŠ¸ ìƒì„±
         if (parryVFXPrefab != null && vfxSpawnPoint != null)
         {
             Instantiate(parryVFXPrefab, vfxSpawnPoint.position, Quaternion.identity);
         }
 
-        // 1) ¹«±â Áï½Ã ¹«·ÂÈ­
+        // 1) ë¬´ê¸° íŒì • ë¬´íš¨í™”
         if (targetWeapon != null)
         {
             targetWeapon.OnParried();
         }
 
-        // 2) Àû ±×·Î±â
+        // 2) ëª¬ìŠ¤í„° ê·¸ë¡œê¸°
         if (targetEnemy)
         {
             var recv = targetEnemy.GetComponent<EnemyParryReceiver>();
@@ -145,13 +156,13 @@ public class ParryManager : MonoBehaviour
             }
         }
 
-        // 3) ÇÃ·¹ÀÌ¾î i-frame ºÎ¿©
+        // 3) í”Œë ˆì´ì–´ i-frame ë¶€ì—¬
         invulnUntilUnscaled = Time.unscaledTime + parrySuccessIFrame;
 
         CloseParryWindow();
     }
 
-    // ÆĞ¸µ Å¸ÀÌ¹Ö Áß ¸Â¾ÒÀ» ¶§ È£Ãâ
+    // íŒ¨ë§ íƒ€ì´ë° ì¤‘ ë§ì•˜ì„ ë•Œ í˜¸ì¶œ
     public void FailParryDueToHit()
     {
         if (!isParryWindow || parrySucceeded) return;
@@ -163,7 +174,7 @@ public class ParryManager : MonoBehaviour
         CloseParryWindow();
         ResetTimeScale();
 
-        // ¸ó½ºÅÍÀÇ °ø°İ À¯Çü¿¡ µû¶ó ´Ù¸¥ ´Ù¿î È¿°ú¸¦ ¹ßµ¿
+        // ê°•ê³µê²© ì—¬ë¶€ì— ë”°ë¼ ì„œë¡œ ë‹¤ë¥¸ ë‹¤ìš´ íš¨ê³¼ë¥¼ ë°œë™
         if (playerHitReceiver != null)
         {
             if (isStrongAttack)
@@ -179,7 +190,7 @@ public class ParryManager : MonoBehaviour
         }
         else
         {
-            // playerHitReceiver ÂüÁ¶°¡ ¾ø´Â °æ¿ì Æú¹é ·ÎÁ÷
+            // playerHitReceiver ì°¸ì¡°ê°€ ì—†ëŠ” ê²½ìš° ì”¬ì—ì„œ ì°¾ì•„ì„œ ì‚¬ìš©
             var fallback = FindAnyObjectByType<PlayerHitReceiver>();
             if (fallback != null)
             {
@@ -208,7 +219,7 @@ public class ParryManager : MonoBehaviour
         Time.fixedDeltaTime = 0.02f;
     }
 
-    // ¿ÜºÎ °¡µå¿ë (´Ù¸¥ ½ºÅ©¸³Æ®¿¡¼­ È£Ãâ)
+    // ì™¸ë¶€ ë…¸ì¶œìš© (ë‹¤ë¥¸ ìŠ¤í¬ë¦½íŠ¸ì—ì„œ í˜¸ì¶œ)
     public bool IsParryInvulnerable()
     {
         return Time.unscaledTime <= invulnUntilUnscaled;

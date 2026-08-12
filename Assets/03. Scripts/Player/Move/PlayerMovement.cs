@@ -47,10 +47,16 @@ public class PlayerMovement : MonoBehaviour
         HandleDefense();
     }
 
+    // 다운(그로기) 애니메이션 재생 중인지 애니메이터에서 직접 확인
+    bool IsKnockedDown()
+    {
+        return animator.GetCurrentAnimatorStateInfo(0).IsTag("Groggy");
+    }
+
     void HandleMovement()
     {
-        // 공격 또는 방어 중일 때는 이동을 막는다
-        if (isAttacking || isDefending) return;
+        // 공격 또는 방어 중, 다운 중일 때는 이동을 막는다
+        if (isAttacking || isDefending || IsKnockedDown()) return;
 
         Vector3 inputDir = GetInputDirection();
         bool isMoving = inputDir.magnitude > 0.1f;
@@ -129,8 +135,8 @@ public class PlayerMovement : MonoBehaviour
 
         animator.SetBool("isGrounded", isGrounded);
 
-        // 공격 또는 방어 중일 때는 새로운 점프를 시작하지 못하게 막는다
-        if (!isAttacking && !isDefending && Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumps)
+        // 공격 또는 방어 중, 다운 중일 때는 새로운 점프를 시작하지 못하게 막는다
+        if (!isAttacking && !isDefending && !IsKnockedDown() && Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumps)
         {
             velocity.y = jumpForce;
             isJumping = true;
@@ -156,19 +162,16 @@ public class PlayerMovement : MonoBehaviour
     // 공격 및 방어 로직을 담당하는 함수
     void HandleAttack()
     {
-        if (isMoving || isDefending ) return;
-        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
-        {
-            isAttacking = false;
-        }
+        // 다운(그로기) 중에는 공격 버튼을 눌러도 무시한다 (트리거 자체를 걸지 않음 -> 다운이 끝난 뒤 저절로 공격이 나가는 문제 방지)
+        if (isDefending || IsKnockedDown()) return;
         // 공격 실행
         if (Input.GetButtonDown("Fire1"))
         {
+            isAttacking = true; // 공격 상태 진입 업데이트
             animator.SetTrigger("Attack");
             animator.SetInteger("AttackCount", AttackCount);
             AttackCount++;
             lastInputTime = Time.time;
-            isAttacking = true; // 공격 상태 진입 업데이트
         }
 
         // 일정 시간 동안 입력이 없으면 콤보 카운트 초기화

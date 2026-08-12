@@ -2,12 +2,12 @@ using UnityEngine;
 
 public class PlayerHitReceiver : MonoBehaviour
 {
-    [Header("¾Ö´Ï¸ŞÀÌÅÍ ¿¬µ¿")]
+    [Header("ì• ë‹ˆë©”ì´í„° ì°¸ì¡°")]
     public Animator playerAnimator;
     public string knockdownTriggerName = "knockdown";
     private PlayerMovement playerMovement;
 
-    [Header("¿¬¼Ó ÆÇÁ¤ Àá±İ")]
+    [Header("ì—°ì† í”¼ê²© ë°©ì§€ ì‹œê°„")]
     public float rehitLockTime = 0.2f;
 
     private bool hitLocked = false;
@@ -17,7 +17,16 @@ public class PlayerHitReceiver : MonoBehaviour
         playerMovement = GetComponent<PlayerMovement>();
     }
 
-    // ¹«±â Ãæµ¹·Îµµ ´Ù¿îÀ» °É°í ½ÍÀ» ¶§ À¯Áö
+    // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ì´ ì¬ìƒ ì¤‘ì¸ì§€ isAttacking í”Œë˜ê·¸ì™€ ì• ë‹ˆë©”ì´í„° íƒœê·¸ ë‘˜ ë‹¤ë¡œ í™•ì¸í•œë‹¤.
+    // (isAttacking í”Œë˜ê·¸ë§Œìœ¼ë¡œëŠ” íƒ€ì´ë°ì´ ì–´ê¸‹ë‚˜ ì½¤ë³´ ë„ì¤‘ ì˜ëª» í’€ë¦¬ëŠ” ê²½ìš°ê°€ ìˆì–´ ì• ë‹ˆë©”ì´í„° ìƒíƒœë¡œ í•œ ë²ˆ ë” ê²€ì¦)
+    private bool IsPlayerAttacking()
+    {
+        bool flagSaysAttacking = playerMovement != null && playerMovement.IsAttacking();
+        bool animSaysAttacking = playerAnimator != null && playerAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Attack");
+        return flagSaysAttacking || animSaysAttacking;
+    }
+
+    // ë¬´ê¸° ì½œë¼ì´ë”ë¡œ ëª¸ì— ë§ì•˜ì„ ë•Œ ì‹¤í–‰
     private void OnTriggerEnter(Collider other)
     {
         if (other.transform.root == transform.root) return;
@@ -29,15 +38,15 @@ public class PlayerHitReceiver : MonoBehaviour
         {
             if (weapon.isStrongAttack)
             {
-                // °­°ø°İÀº °ø°İ ÁßÀÌ¶óµµ ¹«Á¶°Ç Àû¿ë
+                // ê°•ê³µê²©ì€ ê³µê²© ì¤‘ì´ë¼ë„ ë¬´ì‹œí•˜ì§€ ì•Šê³  ë‹¤ìš´
                 TriggerKnockdown2();
             }
             else
             {
-                // ÀÏ¹İ °ø°İÀº °ø°İ ÁßÀÏ ¶§ ¹«½Ã
-                if (playerMovement != null && playerMovement.IsAttacking())
+                // ì¼ë°˜ ê³µê²©ì€ ê³µê²© ì¤‘ì¼ ë•Œ ë¬´ì‹œ
+                if (IsPlayerAttacking())
                 {
-                    Debug.Log("[HitReceiver] °ø°İ ÁßÀÌ¹Ç·Î ÀÏ¹İ Knockdown ¹«½Ã");
+                    Debug.Log("[HitReceiver] ê³µê²© ì¤‘ì´ë¯€ë¡œ ì¼ë°˜ Knockdown ë¬´ì‹œ");
                     return;
                 }
                 TriggerKnockdown();
@@ -58,10 +67,10 @@ public class PlayerHitReceiver : MonoBehaviour
 
     private void TryKnockdownOnce()
     {
-        // °ø°İ ÁßÀÌ¶ó¸é knockdown ¹«½Ã
-        if (playerMovement != null && playerMovement.IsAttacking())
+        // ê³µê²© ì¤‘ì´ë¼ë©´ knockdown ë¬´ì‹œ
+        if (IsPlayerAttacking())
         {
-            Debug.Log("[HitReceiver] °ø°İ ÁßÀÌ¶ó¼­ Knockdown ¹«½Ã");
+            Debug.Log("[HitReceiver] ê³µê²© ì¤‘ì´ë¼ Knockdown ë¬´ì‹œ");
             return;
         }
 

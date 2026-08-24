@@ -12,32 +12,55 @@ public class BuildSystem : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool debugRay = true;
-    [SerializeField] private float debugLogInterval = 0.5f; // ·Î±× µµ¹è ¹æÁö
+    [SerializeField] private float debugLogInterval = 0.5f; // ï¿½Î±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     private float _nextLogTime;
 
     [Header("State")]
     public PlaceableDef currentDef;
-    public BuildGhost ghostPrefab;
+    public BuildGhost ghostPrefab; // currentDefï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½âº»(fallback) ï¿½ï¿½ï¿½ï¿½
 
     private BuildGhost ghost;
+    private PlaceableDef ghostDef;
     private PlacementValidator validator = new PlacementValidator();
     private Quaternion rot = Quaternion.identity;
     private bool useGridSnap = true;
 
     void Start()
     {
-        if (ghost == null) ghost = Instantiate(ghostPrefab, ghostRoot);
-        ghost.gameObject.SetActive(false);
+        if (currentDef != null) EnsureGhostFor(currentDef);
+        if (ghost != null) ghost.gameObject.SetActive(false);
+    }
+
+    private void EnsureGhostFor(PlaceableDef def)
+    {
+        if (ghost != null && ghostDef == def) return;
+
+        var prefabToUse = (def != null && def.ghostPrefab != null) ? def.ghostPrefab : ghostPrefab;
+        if (prefabToUse == null) return;
+
+        var wasActive = ghost != null && ghost.gameObject.activeSelf;
+        if (ghost != null) Destroy(ghost.gameObject);
+
+        ghost = Instantiate(prefabToUse, ghostRoot);
+        ghost.gameObject.SetActive(wasActive);
+        ghostDef = def;
     }
 
     void Update()
     {
-        if (currentDef == null) { ghost.gameObject.SetActive(false); return; }
+        if (currentDef == null) { if (ghost != null) ghost.gameObject.SetActive(false); return; }
+
+        EnsureGhostFor(currentDef);
+        if (ghost == null) return;
 
         if (RaycastGround(out var hit))
         {
             var targetPos = hit.point;
-            if (useGridSnap) targetPos = GridSnap.Snap(targetPos, gridSize);
+            if (useGridSnap)
+            {
+                var snapped = GridSnap.Snap(targetPos, gridSize);
+                targetPos = new Vector3(snapped.x, hit.point.y, snapped.z);
+            }
 
             var targetRot = currentDef.alignToSurfaceNormal
                 ? Quaternion.FromToRotation(Vector3.up, hit.normal) * rot
@@ -46,13 +69,13 @@ public class BuildSystem : MonoBehaviour
             ghost.gameObject.SetActive(true);
             ghost.SetPose(targetPos, targetRot);          
 
-            var isValid = validator.Check(currentDef, targetPos, targetRot, out _);
+            var isValid = validator.Check(currentDef, targetPos, targetRot, out _, hit.collider, hit.normal);
             ghost.SetValid(isValid);
 
             if (isValid && Mouse.current.leftButton.wasPressedThisFrame)
-                TryPlace(targetPos, targetRot);
+                TryPlace(targetPos, targetRot, hit.collider, hit.normal);
 
-            // µð¹ö±× ·Î±×(°úµµÇÑ Ãâ·Â ¹æÁö)
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î±ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
             if (debugRay && Time.time >= _nextLogTime)
             {
                 LogHit("[GroundRay]", hit);
@@ -76,7 +99,7 @@ public class BuildSystem : MonoBehaviour
     private void Cancel()
     {
         currentDef = null;
-        ghost.gameObject.SetActive(false);
+        if (ghost != null) ghost.gameObject.SetActive(false);
     }
 
     private bool RaycastGround(out RaycastHit hit)
@@ -94,24 +117,24 @@ public class BuildSystem : MonoBehaviour
         Debug.Log($"{tag} hit={name} tag={t} layer={layer} dist={hit.distance:F2} point={hit.point} normal={hit.normal}");
     }
 
-    private void TryPlace(Vector3 pos, Quaternion rotQ)
+    private void TryPlace(Vector3 pos, Quaternion rotQ, Collider surfaceCollider, Vector3 surfaceNormal)
     {
         if (wallet && wallet.Balance < currentDef.cost) return;
 
-        var ok = validator.Check(currentDef, pos, rotQ, out var reason);
+        var ok = validator.Check(currentDef, pos, rotQ, out var reason, surfaceCollider, surfaceNormal);
         if (!ok) return;
 
         if (wallet) wallet.Spend(currentDef.cost);
 
         Instantiate(currentDef.prefab, pos, rotQ);
-        // TODO: ÀúÀå Å¥¿¡ ±â·Ï, ³×ºñ¸Þ½Ã ¾÷µ¥ÀÌÆ® µî
+        // TODO: ï¿½ï¿½ï¿½ï¿½ Å¥ï¿½ï¿½ ï¿½ï¿½ï¿½, ï¿½×ºï¿½Þ½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½
     }
 
     public void Select(PlaceableDef def)
     {
         currentDef = def;
-        if (ghost == null) ghost = Instantiate(ghostPrefab, ghostRoot);
-        ghost.gameObject.SetActive(true);
+        EnsureGhostFor(def);
+        if (ghost != null) ghost.gameObject.SetActive(true);
         rot = Quaternion.identity;
     }
 }

@@ -3,51 +3,54 @@ using UnityEngine;
 
 public class PlacementValidator
 {
-    public bool Check(PlaceableDef def, Vector3 pos, Quaternion rot, out string reason, Bounds? worldBoundsOverride = null, Collider supportToIgnore = null,
+    public bool Check(PlaceableDef def, Vector3 pos, Quaternion rot, out string reason, Collider surfaceCollider = null, Vector3? surfaceNormal = null, Bounds? worldBoundsOverride = null, Collider supportToIgnore = null,
     bool debug = false)
     {
         reason = "";
 
-        // 1) °æ»ç Á¦ÇÑ
-        if (def.maxSlopeDegrees < 89f)
+        // 1) ì„¤ì¹˜ í‘œë©´ íƒœê·¸/ê²½ì‚¬ ê²€ì‚¬
+        // BuildSystemì´ ì»¤ì„œ ë ˆì´ë¡œ ì‹¤ì œë¡œ ë§žì¶˜ í‘œë©´(ë°”ë‹¥/ë²½/ì²œìž¥)ì„ ê·¸ëŒ€ë¡œ ì „ë‹¬ë°›ì•„ ê²€ì‚¬í•œë‹¤.
+        // (ì•„ëž˜ë¡œ ë‹¤ì‹œ ë ˆì´ìºìŠ¤íŠ¸í•˜ë©´ ë²½/ì²œìž¥ ì„¤ì¹˜ ì‹œ ì—‰ëš±í•˜ê²Œ ë°”ë‹¥ì´ ê±¸ë ¤ì„œ í•­ìƒ ì‹¤íŒ¨í•˜ê²Œ ë¨)
+        if (surfaceCollider != null)
         {
-            if (Physics.Raycast(new Ray(pos + Vector3.up * 0.5f, Vector3.down), out var hit, 5f))
+            if (def.requireGroundTag)
             {
-                if (def.requireGroundTag)
+                bool hasValidTag = false;
+
+                // ì§€ì • íƒœê·¸ ì¤‘ í•˜ë‚˜ë¼ë„ ë§žìœ¼ë©´ true
+                foreach (var tag in def.requiredGroundTags)
                 {
-                    bool hasValidTag = false;
-
-                    // ¿©·¯ ÅÂ±× Áß ÇÏ³ª¶óµµ ¸ÂÀ¸¸é true
-                    foreach (var tag in def.requiredGroundTags)
+                    if (surfaceCollider.CompareTag(tag))
                     {
-                        if (hit.collider.CompareTag(tag))
-                        {
-                            hasValidTag = true;
-                            break;
-                        }
-                    }
-
-                    if (!hasValidTag)
-                    {
-                        reason = "Àß¸øµÈ Áö¸é ÅÂ±×";
-                        return false;
+                        hasValidTag = true;
+                        break;
                     }
                 }
-                var slope = Vector3.Angle(hit.normal, Vector3.up);
+
+                if (!hasValidTag)
+                {
+                    reason = "ìž˜ëª»ëœ ì„¤ì¹˜ í‘œë©´ íƒœê·¸";
+                    return false;
+                }
+            }
+
+            if (def.maxSlopeDegrees < 89f && surfaceNormal.HasValue)
+            {
+                var slope = Vector3.Angle(surfaceNormal.Value, Vector3.up);
                 if (slope > def.maxSlopeDegrees)
                 {
-                    reason = "°æ»çµµ°¡ ³Ê¹« Å­";
+                    reason = "ê²½ì‚¬ë„ê°€ ë„ˆë¬´ í¼";
                     return false;
                 }
             }
         }
 
-        // 2) Ãæµ¹ Ã¼Å©(AABB ±Ù»ç)
+        // 2) ï¿½æµ¹ Ã¼Å©(AABB ï¿½Ù»ï¿½)
         var bounds = GetWorldBounds(def, pos, rot);
-        var hits = Physics.OverlapBox(bounds.center, bounds.extents, rot, def.blockingLayers, QueryTriggerInteraction.Ignore);
+        var hits = Physics.OverlapBox(bounds.center, bounds.extents, rot, def.blockingLayers, QueryTriggerInteraction.Collide);
         if (hits.Length > 0)
         {
-            reason = "Ãæµ¹ ¹ß»ý";
+            reason = "ï¿½æµ¹ ï¿½ß»ï¿½";
             return false;
         }
 
@@ -56,7 +59,7 @@ public class PlacementValidator
 
     private Bounds GetWorldBounds(PlaceableDef def, Vector3 pos, Quaternion rot)
     {
-        // gridSize¸¦ ¹ÌÅÍ ´ÜÀ§·Î ÇØ¼®(¼¿=1m °¡Á¤)
+        // gridSizeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø¼ï¿½(ï¿½ï¿½=1m ï¿½ï¿½ï¿½ï¿½)
         var size = Vector3.Scale((Vector3)def.gridSize, Vector3.one);
         var bounds = new Bounds(pos, size);
         return bounds;

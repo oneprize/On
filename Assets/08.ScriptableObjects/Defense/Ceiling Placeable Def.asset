@@ -10,21 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: db4ab87c48bee5b42aec1090bf47648a, type: 3}
-  m_Name: New Placeable Def
+  m_Name: Ceiling Placeable Def
   m_EditorClassIdentifier: 
-  id: 
-  prefab: {fileID: 1671942029141594941, guid: cc9c4619864193a4b9a5642f0063c6bf, type: 3}
-  ghostPrefab: {fileID: 6313464375605651716, guid: 4ba761bef590f604a8c1f4dff71b28ed, type: 3}
+  id: Ceiling
+  prefab: {fileID: 1671942029141594941, guid: 11446fa7e47b41f4ebce6dd3e8c1e789, type: 3}
+  ghostPrefab: {fileID: 6313464375605651716, guid: df8918a53eb514a4b8328a50de0f9b90, type: 3}
   gridSize: {x: 5, y: 1, z: 5}
   cost: 0
-  alignToSurfaceNormal: 0
-  requireGroundTag: 0
+  alignToSurfaceNormal: 1
+  requireGroundTag: 1
   requiredGroundTags:
-  - Ground
-  - Road1
-  - Road2
-  - Road3
-  maxSlopeDegrees: 30
+  - Ceiling
+  maxSlopeDegrees: 90
   blockingLayers:
     serializedVersion: 2
     m_Bits: 131072

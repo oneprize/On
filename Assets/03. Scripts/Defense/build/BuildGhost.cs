@@ -9,8 +9,6 @@ public class BuildGhost : MonoBehaviour
     public void SetPose(Vector3 pos, Quaternion rot)
     {
         transform.SetPositionAndRotation(pos, rot);
-        transform.localScale = Vector3.one;
-        var newPos = new Vector3(pos.x, pos.y + 0.95f, pos.z);
     }
 
     public void SetValid(bool isValid)

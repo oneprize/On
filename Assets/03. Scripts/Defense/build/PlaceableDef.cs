@@ -3,13 +3,14 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Building/PlaceableDef")]
 public class PlaceableDef : ScriptableObject
 {
-    public string id;                  // GUID ¶Ç´Â °íÀ¯ ¹®ÀÚ¿­
-    public GameObject prefab;          // ½ÇÁ¦ ¹èÄ¡ ÇÁ¸®ÆÕ
-    public Vector3Int gridSize = Vector3Int.one; // ±×¸®µå ¼¿ ´ÜÀ§ Å©±â
-    public int cost = 0;               // ÀÚ¿ø ºñ¿ë
-    public bool alignToSurfaceNormal;  // Ç¥¸é ³ë¸Ö Á¤·Ä ¿©ºÎ
+    public string id;                  // GUID ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ú¿ï¿½
+    public GameObject prefab;          // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    public BuildGhost ghostPrefab;     // ï¿½ï¿½Ä¡ ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ BuildSystemï¿½ï¿½ ï¿½âº» ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+    public Vector3Int gridSize = Vector3Int.one; // ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½
+    public int cost = 0;               // ï¿½Ú¿ï¿½ ï¿½ï¿½ï¿½
+    public bool alignToSurfaceNormal;  // Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     public bool requireGroundTag = true;
     public string[] requiredGroundTags = new string[] { "Ground", "Road1","Road2", "Road3" };
     public float maxSlopeDegrees = 30f;
-    public LayerMask blockingLayers;   // Ãæµ¹ Â÷´Ü ·¹ÀÌ¾î
+    public LayerMask blockingLayers;   // ï¿½æµ¹ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾ï¿½
 }
